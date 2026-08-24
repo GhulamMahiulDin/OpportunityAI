@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% block title %}Analysis: {{ opportunity.title }} — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="analysis-result-page">
+    <div class="page-header">
+        <div class="flex flex-between flex-center flex-wrap gap-md">
+            <div>
+                <span class="badge badge-type badge-{{ opportunity.type|default('other') }}">{{ opportunity.type|default('Other')|title }}</span>
+                <h1 class="page-title">{{ opportunity.title }}</h1>
+                <p class="page-subtitle">{{ opportunity.organization }}</p>
+            </div>
+            <div class="btn-group">
+                {% if not already_saved %}
+                <form method="POST" action="{{ url_for('applications.save_application', opportunity_id=opportunity.id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" id="save-opp-btn">📌 Save & Track Application</button>
+                </form>
+                {% else %}
+                <a href="{{ url_for('applications.applications_page') }}" class="btn btn-secondary">📋 View in Applications</a>
+                {% endif %}
+                <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-secondary">🔍 Analyze Another</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== RECOMMENDATION BANNER ========== -->
+    <div class="recommendation-banner recommendation-{{ scores.recommendation }}" id="recommendation-banner">
+        <div class="recommendation-icon">{{ scores.recommendation_icon }}</div>
+        <div class="recommendation-text">
+            <h2>{{ scores.recommendation_label }}</h2>
+            {% if scores.recommendation_reasons %}
+            <p>{{ scores.recommendation_reasons[0] }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========== SCORE OVERVIEW GRID ========== -->
+    <div class="score-grid">
+        <!-- Personal Match -->
+        <div class="score-card" id="score-match">
+            <h3 class="score-card-title">Personal Match</h3>
+            <div class="score-circle {% if scores.match_score|default(0, true) >= 75 %}score-high{% elif scores.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.match_score|default(0, true)|int }}</span>
+                <span class="score-unit">%</span>
+            </div>
+        </div>
+
+        <!-- Urgency -->
+        <div class="score-card" id="score-urgency">
+            <h3 class="score-card-title">Urgency</h3>
+            <div class="score-circle {% if scores.urgency_score|default(0, true) >= 75 %}score-high{% elif scores.urgency_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.urgency_score|default(0, true)|int }}</span>
+                <span class="score-unit">/100</span>
+            </div>
+            <span class="badge badge-{{ 'danger' if scores.urgency_score|default(0, true) >= 75 else ('warning' if scores.urgency_score|default(0, true) >= 50 else 'success') }}">
+                {{ scores.urgency_label }}
+            </span>
+            {% if scores.days_remaining is not none %}
+            <p class="score-detail">{{ scores.days_remaining }} days remaining</p>
+            {% endif %}
+        </div>
+
+        <!-- Trust -->
+        <div class="score-card" id="score-trust">
+            <h3 class="score-card-title">Trust Indicator</h3>
+            <div class="score-circle {% if scores.trust_score|default(0, true) >= 75 %}score-high{% elif scores.trust_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.trust_score|default(0, true)|int }}</span>
+                <span class="score-unit">/100</span>
+            </div>
+            <span class="badge badge-{{ 'success' if scores.trust_score|default(0, true) >= 75 else ('warning' if scores.trust_score|default(0, true) >= 50 else 'danger') }}">
+                {{ scores.trust_label }}
+            </span>
+        </div>
+
+        <!-- Completeness -->
+        <div class="score-card" id="score-completeness">
+            <h3 class="score-card-title">Info Completeness</h3>
+            <div class="score-circle {% if scores.completeness_score|default(0, true) >= 75 %}score-high{% elif scores.completeness_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.completeness_score|default(0, true)|int }}</span>
+                <span class="score-unit">%</span>
+            </div>
+            <p class="score-detail">{{ scores.completeness_present }}/{{ scores.completeness_total }} fields</p>
+        </div>
+    </div>
+
+    <!-- ========== WHY SHOULD I APPLY? ========== -->
+    <div class="analysis-grid">
+        <div class="card" id="why-apply-card">
+            <div class="card-header">
+                <h2>✨ Why This Opportunity Matters to You</h2>
+            </div>
+            <div class="card-body">
+                {% if scores.why_apply %}
+                <ul class="match-reasons">
+                    {% for reason in scores.why_apply %}
+                    <li class="reason-positive">✓ {{ reason }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Not enough profile data to generate personalized reasons. <a href="{{ url_for('profile.profile_page') }}">Update your profile</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card" id="things-to-consider-card">
+            <div class="card-header">
+                <h2>⚠️ Things to Consider</h2>
+            </div>
+            <div class="card-body">
+                {% if scores.things_to_consider %}
+                <ul class="match-reasons">
+                    {% for item in scores.things_to_consider %}
+                    <li class="reason-warning">⚠ {{ item }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No concerns identified.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ELIGIBILITY CHECK ========== -->
+    <div class="card" id="eligibility-card">
+        <div class="card-header">
+            <h2>🎓 Eligibility Check</h2>
+            <span class="badge badge-{{ 'success' if scores.eligibility_status == 'eligible' else ('warning' if scores.eligibility_status == 'possibly_eligible' else 'danger') }}">
+                {% if scores.eligibility_status == 'eligible' %}🟢 Eligible
+                {% elif scores.eligibility_status == 'possibly_eligible' %}🟡 Possibly Eligible
+                {% else %}🔴 Does Not Appear Eligible{% endif %}
+            </span>
+        </div>
+        <div class="card-body">
+            {% if scores.eligibility_checks %}
+            <ul class="eligibility-list">
+                {% for check in scores.eligibility_checks %}
+                <li class="{% if check.met %}check-pass{% else %}check-fail{% endif %}">
+                    <span class="check-icon">{% if check.met %}✓{% else %}⚠{% endif %}</span>
+                    <span class="check-text">{{ check.detail }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Not enough information to determine eligibility.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========== SKILL MATCHING ========== -->
+    <div class="card" id="skills-match-card">
+        <div class="card-header">
+            <h2>🛠️ Skill Matching</h2>
+        </div>
+        <div class="card-body">
+            <div class="analysis-grid">
+                <!-- Required Skills -->
+                <div class="skill-match-section">
+                    <h3>Required Skills</h3>
+                    {% if scores.skill_details and scores.skill_details.required_matched %}
+                    <ul class="match-reasons">
+                        {% for s in scores.skill_details.required_matched %}
+                        <li class="reason-positive">✓ {{ s }}</li>
+                        {% endfor %}
+                        {% for s in scores.skill_details.required_missing %}
+                        <li class="reason-warning">✗ {{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="score-bar-wrapper">
+                        <div class="score-bar">
+                            <div class="score-bar-fill {% if scores.skill_match_required|default(0, true) >= 75 %}fill-high{% elif scores.skill_match_required|default(0, true) >= 50 %}fill-medium{% else %}fill-low{% endif %}"
+                                 style="width: {{ scores.skill_match_required|default(0, true) }}%"></div>
+                        </div>
+                        <span class="score-bar-label">{{ scores.skill_match_required|default(0, true)|int }}% match</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No specific required skills identified.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Preferred Skills -->
+                <div class="skill-match-section">
+                    <h3>Preferred Skills</h3>
+                    {% if scores.skill_details and scores.skill_details.preferred_matched %}
+                    <ul class="match-reasons">
+                        {% for s in scores.skill_details.preferred_matched %}
+                        <li class="reason-positive">✓ {{ s }}</li>
+                        {% endfor %}
+                        {% for s in scores.skill_details.preferred_missing %}
+                        <li class="reason-warning">✗ {{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="score-bar-wrapper">
+                        <div class="score-bar">
+                            <div class="score-bar-fill {% if scores.skill_match_preferred|default(0, true) >= 75 %}fill-high{% elif scores.skill_match_preferred|default(0, true) >= 50 %}fill-medium{% else %}fill-low{% endif %}"
+                                 style="width: {{ scores.skill_match_preferred|default(0, true) }}%"></div>
+                        </div>
+                        <span class="score-bar-label">{{ scores.skill_match_preferred|default(0, true)|int }}% match</span>
+                    </div>
+                    {% elif scores.skill_details and scores.skill_details.preferred_missing %}
+                    <ul class="match-reasons">
+                        {% for s in scores.skill_details.preferred_missing %}
+                        <li class="reason-warning">✗ {{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No preferred skills specified.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MATCH SCORE BREAKDOWN ========== -->
+    <div class="card" id="match-breakdown-card">
+        <div class="card-header">
+            <h2>📊 Match Score Breakdown</h2>
+        </div>
+        <div class="card-body">
+            {% if scores.match_reasons %}
+            <ul class="match-reasons">
+                {% for reason in scores.match_reasons %}
+                <li class="{% if '✓' in reason or 'match' in reason|lower %}reason-positive{% elif '⚠' in reason or 'missing' in reason|lower %}reason-warning{% else %}reason-neutral{% endif %}">
+                    {{ reason }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========== OPPORTUNITY DETAILS ========== -->
+    <div class="card" id="details-card">
+        <div class="card-header">
+            <h2>📝 Opportunity Details</h2>
+        </div>
+        <div class="card-body">
+            <div class="detail-grid">
+                {% if opportunity.organization %}
+                <div class="detail-item">
+                    <span class="detail-label">Organization</span>
+                    <span class="detail-value">{{ opportunity.organization }}</span>
+                </div>
+                {% endif %}
+                {% if opportunity.type %}
+                <div class="detail-item">
+                    <span class="detail-label">Type</span>
+                    <span class="detail-value">{{ opportunity.type|title }}</span>
+                </div>
+                {% endif %}
+                {% if opportunity.deadline %}
+                <div class="detail-item">
+                    <span class="detail-label">Deadline</span>
+                    <span class="detail-value">{{ opportunity.deadline }}</span>
+                </div>
+                {% endif %}
+                {% if opportunity.location %}
+                <div class="detail-item">
+                    <span class="detail-label">Location</span>
+                    <span class="detail-value">{{ opportunity.location }}</span>
+                </div>
+                {% endif %}
+                {% if opportunity.remote_onsite %}
+                <div class="detail-item">
+                    <span class="detail-label">Format</span>
+                    <span class="detail-value">{{ opportunity.remote_onsite|title }}</span>
+                </div>
+                {% endif %}
+                {% if opportunity.application_url %}
+                <div class="detail-item">
+                    <span class="detail-label">Apply</span>
+                    <span class="detail-value">
+                        <a href="{{ opportunity.application_url }}" target="_blank" rel="noopener noreferrer" class="external-link">
+                            {{ opportunity.application_url|truncate(50) }} ↗
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if opportunity.description %}
+            <div class="detail-description">
+                <h3>Description</h3>
+                <p>{{ opportunity.description }}</p>
+            </div>
+            {% endif %}
+
+            {% if opportunity.eligibility_summary %}
+            <div class="detail-description">
+                <h3>Eligibility</h3>
+                <p>{{ opportunity.eligibility_summary }}</p>
+            </div>
+            {% endif %}
+
+            {% if opportunity.documents_needed %}
+            <div class="detail-description">
+                <h3>Required Documents</h3>
+                <p>{{ opportunity.documents_needed }}</p>
+            </div>
+            {% endif %}
+
+            {% if opportunity.selection_process %}
+            <div class="detail-description">
+                <h3>Selection Process</h3>
+                <p>{{ opportunity.selection_process }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========== TRUST DETAILS ========== -->
+    <div class="card" id="trust-details-card">
+        <div class="card-header">
+            <h2>🔒 Trust Analysis</h2>
+        </div>
+        <div class="card-body">
+            {% if scores.trust_reasons %}
+            <ul class="match-reasons">
+                {% for r in scores.trust_reasons %}
+                <li class="reason-{{ r.type }}">
+                    {% if r.type == 'positive' %}✓{% elif r.type == 'warning' %}⚠{% else %}✗{% endif %}
+                    {{ r.text }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <p class="trust-disclaimer">
+                {{ scores.trust_disclaimer|default("This score identifies signals only and does not guarantee authenticity. Always verify through the organization's official website before submitting sensitive information.") }}
+            </p>
+        </div>
+    </div>
+
+    <!-- ========== COMPLETENESS DETAILS ========== -->
+    <div class="card" id="completeness-details-card">
+        <div class="card-header">
+            <h2>📋 Information Completeness</h2>
+        </div>
+        <div class="card-body">
+            <div class="analysis-grid">
+                <div>
+                    <h3>Present Information</h3>
+                    {% if scores.completeness_present_items %}
+                    <ul class="match-reasons">
+                        {% for item in scores.completeness_present_items %}
+                        <li class="reason-positive">✓ {{ item.field }}: {{ item.detail }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <h3>Missing Information</h3>
+                    {% if scores.completeness_missing_items %}
+                    <ul class="match-reasons">
+                        {% for item in scores.completeness_missing_items %}
+                        <li class="reason-warning">⚠ {{ item.field }}: {{ item.suggestion }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">All key information is present.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== APPLICATION CHECKLIST ========== -->
+    {% if checklist %}
+    <div class="card" id="checklist-card">
+        <div class="card-header">
+            <h2>☑️ Application Checklist</h2>
+        </div>
+        <div class="card-body">
+            {% set categories = checklist|groupby('category') %}
+            {% for category, tasks in categories %}
+            <div class="checklist-category">
+                <h3>{{ category|title }}</h3>
+                <div class="checklist">
+                    {% for task in tasks %}
+                    <label class="checklist-item {% if task.completed %}completed{% endif %}">
+                        <input type="checkbox" {% if task.completed %}checked{% endif %}
+                               data-task-id="{{ task.id }}"
+                               data-app-id="{{ application_id|default(0) }}"
+                               class="checklist-checkbox">
+                        <span class="checklist-text">{{ task.task_name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Applications — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="applications-page">
+    <div class="page-header">
+        <h1 class="page-title">Application Tracker</h1>
+        <p class="page-subtitle">Track your application progress and stay on top of deadlines.</p>
+    </div>
+
+    <!-- ========== STATUS FILTER ========== -->
+    <div class="filter-bar">
+        <div class="filter-pills" id="status-filters">
+            <button class="filter-pill {% if not current_status %}active{% endif %}" data-status="">All</button>
+            <button class="filter-pill {% if current_status == 'saved' %}active{% endif %}" data-status="saved">Saved</button>
+            <button class="filter-pill {% if current_status == 'preparing' %}active{% endif %}" data-status="preparing">Preparing</button>
+            <button class="filter-pill {% if current_status == 'applied' %}active{% endif %}" data-status="applied">Applied</button>
+            <button class="filter-pill {% if current_status == 'assessment' %}active{% endif %}" data-status="assessment">Assessment</button>
+            <button class="filter-pill {% if current_status == 'interview' %}active{% endif %}" data-status="interview">Interview</button>
+            <button class="filter-pill {% if current_status == 'selected' %}active{% endif %}" data-status="selected">Selected</button>
+            <button class="filter-pill {% if current_status == 'rejected' %}active{% endif %}" data-status="rejected">Rejected</button>
+        </div>
+    </div>
+
+    <!-- ========== APPLICATION LIST ========== -->
+    {% if applications and applications|length > 0 %}
+    <div class="application-list" id="application-list">
+        {% for app in applications %}
+        <div class="application-card" id="app-card-{{ app.id }}" data-status="{{ app.status }}">
+            <div class="app-card-header">
+                <div class="app-card-info">
+                    <h3 class="app-card-title">
+                        <a href="{{ url_for('opportunities.opportunity_detail', opportunity_id=app.opportunity_id) }}">
+                            {{ app.title }}
+                        </a>
+                    </h3>
+                    <p class="app-card-org text-muted">{{ app.organization }}</p>
+                </div>
+                <div class="app-card-match">
+                    {% if app.match_score|default(0, true) is defined and app.match_score|default(0, true) is not none %}
+                    <span class="score-mini {% if app.match_score|default(0, true) >= 75 %}score-high{% elif app.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                        {{ app.match_score|default(0, true)|int }}%
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <div class="app-card-meta">
+                    {% if app.deadline %}
+                    <span class="meta-item">📅 {{ app.deadline }}</span>
+                    {% endif %}
+                    <span class="meta-item">📝 Created {{ app.created_at|dateformat if app.created_at else '' }}</span>
+                </div>
+
+                <div class="app-card-progress">
+                    {% if app.tasks_total and app.tasks_total > 0 %}
+                    <div class="progress-mini-bar">
+                        <div class="progress-mini-fill" style="width: {{ (app.tasks_done / app.tasks_total * 100)|int }}%"></div>
+                    </div>
+                    <span class="progress-mini-text">{{ app.tasks_done }}/{{ app.tasks_total }} tasks</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="app-card-footer">
+                <div class="app-status-control">
+                    <label class="form-label" for="status-{{ app.id }}">Status:</label>
+                    <select class="form-select status-select" id="status-{{ app.id }}"
+                            data-app-id="{{ app.id }}"
+                            onchange="updateApplicationStatus({{ app.id }}, this.value)">
+                        <option value="saved" {% if app.status == 'saved' %}selected{% endif %}>Saved</option>
+                        <option value="preparing" {% if app.status == 'preparing' %}selected{% endif %}>Preparing</option>
+                        <option value="applied" {% if app.status == 'applied' %}selected{% endif %}>Applied</option>
+                        <option value="assessment" {% if app.status == 'assessment' %}selected{% endif %}>Assessment</option>
+                        <option value="interview" {% if app.status == 'interview' %}selected{% endif %}>Interview</option>
+                        <option value="selected" {% if app.status == 'selected' %}selected{% endif %}>Selected</option>
+                        <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="withdrawn" {% if app.status == 'withdrawn' %}selected{% endif %}>Withdrawn</option>
+                        <option value="deadline_passed" {% if app.status == 'deadline_passed' %}selected{% endif %}>Deadline Passed</option>
+                    </select>
+                </div>
+
+                <div class="app-card-actions">
+                    <a href="{{ url_for('applications.application_detail', application_id=app.id) }}" class="btn btn-secondary btn-sm">View Tasks</a>
+                    <form method="POST" action="{{ url_for('applications.delete_application_route', application_id=app.id) }}" style="display:inline;"
+                          onsubmit="return confirm('Delete this application tracking?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Delete">🗑️</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No applications yet</h3>
+        <p>Analyze an opportunity and save it to start tracking your applications.</p>
+        <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-primary">Analyze an Opportunity</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

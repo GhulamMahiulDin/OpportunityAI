@@ -1,0 +1,97 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Opportunities — Admin — OpportunityAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Opportunity Moderation</h1>
+    <p class="page-subtitle">Review, flag, or correct opportunity data. Scores stay AI-computed — admins fix the underlying data, not the score.</p>
+</div>
+
+<div class="filter-pills" style="margin-bottom:1rem;">
+    <a href="{{ url_for('admin.opportunities_moderation') }}" class="filter-pill {% if not status_filter %}active{% endif %}">All</a>
+    <a href="{{ url_for('admin.opportunities_moderation', status='pending') }}" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.opportunities_moderation', status='approved') }}" class="filter-pill {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+    <a href="{{ url_for('admin.opportunities_moderation', status='flagged') }}" class="filter-pill {% if status_filter == 'flagged' %}active{% endif %}">Flagged</a>
+    <a href="{{ url_for('admin.opportunities_moderation', status='removed') }}" class="filter-pill {% if status_filter == 'removed' %}active{% endif %}">Removed</a>
+</div>
+
+{% if opportunities %}
+    {% for opp in opportunities %}
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+            <div class="opp-card-top" style="padding:0;">
+                <div class="opp-card-info">
+                    <span class="badge badge-type badge-{{ opp.type|default('other') }}">{{ opp.type|default('Other')|title }}</span>
+                    {% if opp.moderation_status == 'pending' %}<span class="badge badge-neutral">Pending Review</span>{% endif %}
+                    {% if opp.moderation_status == 'flagged' %}<span class="badge badge-warning">Flagged</span>{% endif %}
+                    {% if opp.moderation_status == 'removed' %}<span class="badge badge-danger">Removed</span>{% endif %}
+                    <h3 class="opp-card-title">{{ opp.title }}</h3>
+                    <p class="opp-card-org">{{ opp.organization }}</p>
+                    <p class="text-muted" style="font-size:0.78rem; margin-top:0.35rem;">
+                        Submitted by {{ opp.submitted_by_name }} ({{ opp.submitted_by_email }}) · Source: {{ opp.source }}
+                        {% if opp.avg_trust_score %} · Trust score: {{ opp.avg_trust_score|round|int }}{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="opp-card-meta" style="margin-top:0.5rem;">
+                {% if opp.deadline %}<span class="meta-item">📅 {{ opp.deadline }}</span>{% endif %}
+                {% if opp.location %}<span class="meta-item">📍 {{ opp.location }}</span>{% endif %}
+            </div>
+
+            <div class="inbox-item-actions">
+                <form method="POST" action="{{ url_for('admin.moderate_opportunity', opportunity_id=opp.id) }}" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="approved">
+                    <button type="submit" class="btn btn-primary btn-sm" {% if opp.moderation_status == 'approved' %}disabled{% endif %}>✅ Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.moderate_opportunity', opportunity_id=opp.id) }}" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="flagged">
+                    <button type="submit" class="btn btn-secondary btn-sm" {% if opp.moderation_status == 'flagged' %}disabled{% endif %}>🚩 Flag</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.moderate_opportunity', opportunity_id=opp.id) }}" style="display:inline;"
+                      onsubmit="return confirm('Remove this opportunity from student view?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="removed">
+                    <button type="submit" class="btn btn-danger btn-sm" {% if opp.moderation_status == 'removed' %}disabled{% endif %}>🗑️ Remove</button>
+                </form>
+                <a href="{{ url_for('opportunities.opportunity_detail', opportunity_id=opp.id) }}" class="btn btn-ghost btn-sm" target="_blank">View Full Analysis</a>
+            </div>
+
+            <details style="margin-top:0.75rem;">
+                <summary style="cursor:pointer; font-size:0.82rem; color:var(--text-secondary);">✏️ Correct extracted data (e.g. wrong deadline)</summary>
+                <form method="POST" action="{{ url_for('admin.correct_opportunity', opportunity_id=opp.id) }}" style="display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="field" class="form-select" style="max-width:180px;">
+                        <option value="title">Title</option>
+                        <option value="organization">Organization</option>
+                        <option value="deadline">Deadline</option>
+                        <option value="location">Location</option>
+                        <option value="application_url">Application URL</option>
+                    </select>
+                    <input type="text" name="value" class="form-input" placeholder="New value" style="flex:1; min-width:200px;">
+                    <button type="submit" class="btn btn-secondary btn-sm">Save Correction</button>
+                </form>
+            </details>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No opportunities found</h3>
+        <p>Nothing matches this filter yet.</p>
+    </div>
+{% endif %}
+
+{% if total_pages > 1 %}
+<div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; margin-top:1.25rem;">
+    <a href="{{ url_for('admin.opportunities_moderation', status=status_filter or None, page=page-1) }}"
+       class="btn btn-secondary btn-sm" {% if page <= 1 %}style="pointer-events:none; opacity:0.4;"{% endif %}>← Prev</a>
+    <span class="text-muted" style="font-size:0.85rem;">Page {{ page }} of {{ total_pages }} ({{ total_count }} total)</span>
+    <a href="{{ url_for('admin.opportunities_moderation', status=status_filter or None, page=page+1) }}"
+       class="btn btn-secondary btn-sm" {% if page >= total_pages %}style="pointer-events:none; opacity:0.4;"{% endif %}>Next →</a>
+</div>
+{% endif %}
+{% endblock %}

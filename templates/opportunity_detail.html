@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ opportunity.title }} — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="opportunity-detail-page">
+    <!-- Same layout as analysis_result but for viewing a saved opportunity -->
+    <div class="page-header">
+        <div class="flex flex-between flex-center flex-wrap gap-md">
+            <div>
+                <a href="{{ url_for('opportunities.opportunities_page') }}" class="btn btn-secondary btn-sm mb-sm">← Back to Opportunities</a>
+                <span class="badge badge-type badge-{{ opportunity.type|default('other') }}">{{ opportunity.type|default('Other')|title }}</span>
+                <h1 class="page-title">{{ opportunity.title }}</h1>
+                <p class="page-subtitle">{{ opportunity.organization }}</p>
+            </div>
+            <div class="btn-group">
+                {% if not already_tracking %}
+                <form method="POST" action="{{ url_for('applications.save_application', opportunity_id=opportunity.id) }}" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary">📌 Track Application</button>
+                </form>
+                {% else %}
+                <span class="badge badge-success">Already Tracking</span>
+                {% endif %}
+                {% if opportunity.application_url %}
+                <a href="{{ opportunity.application_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Apply Now ↗</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if scores %}
+    <!-- Score Grid -->
+    <div class="score-grid">
+        <div class="score-card">
+            <h3 class="score-card-title">Match</h3>
+            <div class="score-circle {% if scores.match_score|default(0, true) >= 75 %}score-high{% elif scores.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.match_score|default(0, true)|int }}</span>
+                <span class="score-unit">%</span>
+            </div>
+        </div>
+        <div class="score-card">
+            <h3 class="score-card-title">Urgency</h3>
+            <div class="score-circle {% if scores.urgency_score|default(0, true) >= 75 %}score-high{% elif scores.urgency_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.urgency_score|default(0, true)|int }}</span>
+                <span class="score-unit">/100</span>
+            </div>
+            <span class="badge badge-{{ 'danger' if scores.urgency_score|default(0, true) >= 75 else ('warning' if scores.urgency_score|default(0, true) >= 50 else 'success') }}">{{ scores.urgency_label }}</span>
+        </div>
+        <div class="score-card">
+            <h3 class="score-card-title">Trust</h3>
+            <div class="score-circle {% if scores.trust_score|default(0, true) >= 75 %}score-high{% elif scores.trust_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.trust_score|default(0, true)|int }}</span>
+                <span class="score-unit">/100</span>
+            </div>
+        </div>
+        <div class="score-card">
+            <h3 class="score-card-title">Completeness</h3>
+            <div class="score-circle {% if scores.completeness_score|default(0, true) >= 75 %}score-high{% elif scores.completeness_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                <span class="score-value">{{ scores.completeness_score|default(0, true)|int }}</span>
+                <span class="score-unit">%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendation -->
+    {% if scores.recommendation %}
+    <div class="recommendation-banner recommendation-{{ scores.recommendation }}">
+        <div class="recommendation-icon">{{ scores.recommendation_icon }}</div>
+        <div class="recommendation-text">
+            <h2>{{ scores.recommendation_label }}</h2>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Opportunity Details -->
+    <div class="card">
+        <div class="card-header"><h2>📝 Details</h2></div>
+        <div class="card-body">
+            <div class="detail-grid">
+                {% if opportunity.deadline %}
+                <div class="detail-item"><span class="detail-label">Deadline</span><span class="detail-value">{{ opportunity.deadline }}</span></div>
+                {% endif %}
+                {% if opportunity.location %}
+                <div class="detail-item"><span class="detail-label">Location</span><span class="detail-value">{{ opportunity.location }}</span></div>
+                {% endif %}
+                {% if opportunity.remote_onsite %}
+                <div class="detail-item"><span class="detail-label">Format</span><span class="detail-value">{{ opportunity.remote_onsite|title }}</span></div>
+                {% endif %}
+                {% if opportunity.application_url %}
+                <div class="detail-item"><span class="detail-label">Apply</span><span class="detail-value"><a href="{{ opportunity.application_url }}" target="_blank" rel="noopener noreferrer">{{ opportunity.application_url|truncate(50) }} ↗</a></span></div>
+                {% endif %}
+            </div>
+            {% if opportunity.description %}
+            <div class="detail-description"><h3>Description</h3><p>{{ opportunity.description }}</p></div>
+            {% endif %}
+            {% if opportunity.eligibility_summary %}
+            <div class="detail-description"><h3>Eligibility</h3><p>{{ opportunity.eligibility_summary }}</p></div>
+            {% endif %}
+            {% if opportunity.documents_needed %}
+            <div class="detail-description"><h3>Documents</h3><p>{{ opportunity.documents_needed }}</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Delete button -->
+    <div class="mt-md">
+        <form method="POST" action="{{ url_for('opportunities.delete_opportunity_route', opportunity_id=opportunity.id) }}"
+              onsubmit="return confirm('Are you sure you want to delete this opportunity?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete Opportunity</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

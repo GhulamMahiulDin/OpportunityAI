@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Profile — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="profile-page">
+    <div class="page-header">
+        <h1 class="page-title">Student Profile</h1>
+        <p class="page-subtitle">Your profile powers match scoring — keep it updated for accurate results.</p>
+    </div>
+
+    <!-- ========== PERSONAL & ACADEMIC INFO ========== -->
+    <form method="POST" action="{{ url_for('profile.update_profile_route') }}" id="profile-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 Personal Information</h2>
+            </div>
+            <div class="card-body">
+                <div class="profile-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="university">University</label>
+                        <input type="text" class="form-input" id="university" name="university"
+                               placeholder="e.g., MIT, Stanford, Oxford"
+                               value="{{ profile.university|default('') }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="degree">Degree</label>
+                        <select class="form-select" id="degree" name="degree">
+                            <option value="" {% if not profile.degree %}selected{% endif %}>Select degree</option>
+                            <option value="Bachelor's" {% if profile.degree == "Bachelor's" %}selected{% endif %}>Bachelor's</option>
+                            <option value="Master's" {% if profile.degree == "Master's" %}selected{% endif %}>Master's</option>
+                            <option value="PhD" {% if profile.degree == "PhD" %}selected{% endif %}>PhD</option>
+                            <option value="Associate" {% if profile.degree == "Associate" %}selected{% endif %}>Associate</option>
+                            <option value="Diploma" {% if profile.degree == "Diploma" %}selected{% endif %}>Diploma</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="major">Major / Field of Study</label>
+                        <input type="text" class="form-input" id="major" name="major"
+                               placeholder="e.g., Computer Science"
+                               value="{{ profile.major|default('') }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="semester">Semester</label>
+                        <input type="number" class="form-input" id="semester" name="semester"
+                               min="1" max="12" placeholder="Current semester"
+                               value="{{ profile.semester|default(1) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="cgpa">CGPA</label>
+                        <input type="number" class="form-input" id="cgpa" name="cgpa"
+                               min="0" max="4.0" step="0.01" placeholder="e.g., 3.50"
+                               value="{{ profile.cgpa|default(0.0) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="graduation_year">Expected Graduation Year</label>
+                        <input type="number" class="form-input" id="graduation_year" name="graduation_year"
+                               min="2024" max="2035" placeholder="e.g., 2026"
+                               value="{{ profile.graduation_year|default(2026) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="location">Location</label>
+                        <input type="text" class="form-input" id="location" name="location"
+                               placeholder="e.g., New York, USA"
+                               value="{{ profile.location|default('') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>📚 Academic Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label" for="coursework">Relevant Coursework</label>
+                    <textarea class="form-textarea" id="coursework" name="coursework" rows="3"
+                              placeholder="e.g., Data Structures, Algorithms, Machine Learning, Database Systems, Web Development...">{{ profile.coursework|default('') }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="experience">Experience / Projects</label>
+                    <textarea class="form-textarea" id="experience" name="experience" rows="3"
+                              placeholder="e.g., 2 months internship at XYZ, Personal website project, Research assistant...">{{ profile.experience|default('') }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" id="save-profile-btn">💾 Save Profile</button>
+    </form>
+
+    <!-- ========== SKILLS ========== -->
+    <div class="card" id="skills-section">
+        <div class="card-header">
+            <h2>🛠️ Skills</h2>
+        </div>
+        <div class="card-body">
+            <div class="tags-container" id="skills-container">
+                {% for skill in skills %}
+                <div class="tag tag-removable" data-name="{{ skill.name }}">
+                    <span class="tag-text">{{ skill.name }}</span>
+                    <button class="tag-remove" data-type="skill" data-name="{{ skill.name }}" aria-label="Remove {{ skill.name }}">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="tag-add-group">
+                <div class="autocomplete-wrapper">
+                    <input type="text" class="form-input tag-input" id="skill-input"
+                           placeholder="Type a skill and press Enter..."
+                           data-type="skill" autocomplete="off">
+                    <div class="autocomplete-dropdown" id="skill-dropdown"></div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="add-skill-btn" data-type="skill">+ Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== INTERESTS ========== -->
+    <div class="card" id="interests-section">
+        <div class="card-header">
+            <h2>💡 Interests</h2>
+        </div>
+        <div class="card-body">
+            <div class="tags-container" id="interests-container">
+                {% for interest in interests %}
+                <div class="tag tag-removable" data-name="{{ interest }}">
+                    <span class="tag-text">{{ interest }}</span>
+                    <button class="tag-remove" data-type="interest" data-name="{{ interest }}" aria-label="Remove {{ interest }}">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="tag-add-group">
+                <div class="autocomplete-wrapper">
+                    <input type="text" class="form-input tag-input" id="interest-input"
+                           placeholder="Type an interest and press Enter..."
+                           data-type="interest" autocomplete="off">
+                    <div class="autocomplete-dropdown" id="interest-dropdown"></div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="add-interest-btn" data-type="interest">+ Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PREFERENCES ========== -->
+    <div class="card" id="preferences-section">
+        <div class="card-header">
+            <h2>🎯 Opportunity Preferences</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="subsection-title">Opportunity Types</h3>
+            <div class="preference-grid" id="pref-types">
+                {% set type_options = ['Internship', 'Scholarship', 'Competition', 'Fellowship', 'Research', 'Hackathon', 'Job', 'Workshop', 'Conference'] %}
+                {% for opt in type_options %}
+                <label class="preference-item {% if opt in preferences.types %}active{% endif %}" id="pref-type-{{ opt|lower }}">
+                    <input type="checkbox" name="pref_type" value="{{ opt }}"
+                           {% if opt in preferences.types %}checked{% endif %}
+                           data-type="preference" data-name="{{ opt }}"
+                           onchange="togglePreference(this, '{{ opt }}')">
+                    <span class="preference-label">{{ opt }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <h3 class="subsection-title mt-md">Format Preferences</h3>
+            <div class="preference-grid" id="pref-formats">
+                {% set format_options = ['Remote', 'On-site', 'Hybrid', 'Local', 'International'] %}
+                {% for opt in format_options %}
+                <label class="preference-item {% if opt in preferences.formats %}active{% endif %}" id="pref-format-{{ opt|lower }}">
+                    <input type="checkbox" name="pref_format" value="{{ opt }}"
+                           {% if opt in preferences.formats %}checked{% endif %}
+                           data-type="preference" data-name="{{ opt }}"
+                           onchange="togglePreference(this, '{{ opt }}')">
+                    <span class="preference-label">{{ opt }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Expose available options for autocomplete
+    window.availableSkills = {{ all_skills|tojson }};
+    window.availableInterests = {{ all_interests|tojson }};
+</script>
+{% endblock %}
+{% endblock %}

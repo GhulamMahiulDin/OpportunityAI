@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OpportunityAI — Find what matters. Know your match. Apply with confidence.">
+    <meta name="theme-color" content="#0f1117">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}OpportunityAI{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout {% block layout_class %}has-sidebar{% endblock %}" id="app-layout">
+
+        <!-- ========== MOBILE TOP HEADER ========== -->
+        <header class="top-header" id="top-header">
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="top-header-logo">
+                <span class="logo-icon">◆</span> OpportunityAI
+            </div>
+            <div class="top-header-spacer"></div>
+        </header>
+
+        <!-- ========== MOBILE OVERLAY ========== -->
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+
+        <!-- ========== SIDEBAR ========== -->
+        {% block sidebar %}
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-icon">◆</span>
+                <div class="logo-text">
+                    <span class="logo-name">OpportunityAI</span>
+                    <span class="logo-tagline">Find what matters</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard.dashboard_page') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+                <a href="{{ url_for('inbox.inbox_page') }}" class="nav-link {% if active_page == 'inbox' %}active{% endif %}" id="nav-inbox">
+                    <span class="nav-icon">📥</span>
+                    <span class="nav-label">Inbox</span>
+                    {% if sidebar_inbox_pending %}<span class="pending-count-badge">{{ sidebar_inbox_pending }}</span>{% endif %}
+                </a>
+                <a href="{{ url_for('analyze.analyze_page') }}" class="nav-link {% if active_page == 'analyze' %}active{% endif %}" id="nav-analyze">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-label">Analyze</span>
+                </a>
+                <a href="{{ url_for('opportunities.opportunities_page') }}" class="nav-link {% if active_page == 'opportunities' %}active{% endif %}" id="nav-opportunities">
+                    <span class="nav-icon">💼</span>
+                    <span class="nav-label">Opportunities</span>
+                </a>
+                <a href="{{ url_for('applications.applications_page') }}" class="nav-link {% if active_page == 'applications' %}active{% endif %}" id="nav-applications">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Applications</span>
+                </a>
+                <a href="{{ url_for('profile.profile_page') }}" class="nav-link {% if active_page == 'profile' %}active{% endif %}" id="nav-profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="{{ url_for('settings.settings_page') }}" class="nav-link {% if active_page == 'settings' %}active{% endif %}" id="nav-settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link" id="nav-admin">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-label">Admin Portal</span>
+                </a>
+                {% endif %}
+                <div class="sidebar-user">
+                    <div class="user-avatar">{{ session.get('user_name', 'U')[0] }}</div>
+                    <div class="user-info">
+                        <span class="user-name">{{ session.get('user_name', 'User') }}</span>
+                        <span class="user-email">{{ session.get('user_email', '') }}</span>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="nav-link logout-link" id="nav-logout" style="width:100%; background:none; border:none; text-align:left; cursor:pointer; font:inherit;">
+                        <span class="nav-icon">🚪</span>
+                        <span class="nav-label">Log Out</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+        {% endblock %}
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content" id="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container" id="flash-container">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}" role="alert">
+                                <span class="flash-text">{{ message }}</span>
+                                <button class="flash-close" aria-label="Close">&times;</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top-btn" id="scroll-top-btn" aria-label="Scroll to top">↑</button>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirm-modal" style="display:none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-message">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="confirm-modal-cancel">Cancel</button>
+                <button class="btn btn-danger" id="confirm-modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Analyze Opportunity — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="analyze-page">
+    <div class="page-header">
+        <h1 class="page-title">Analyze Opportunity</h1>
+        <p class="page-subtitle">Paste an email, scholarship announcement, or opportunity description to analyze.</p>
+    </div>
+
+    <!-- ========== INPUT TABS ========== -->
+    <div class="card">
+        <div class="card-header">
+            <div class="tab-group" id="analyze-tabs">
+                <button class="tab-btn active" data-tab="paste" id="tab-paste">📋 Paste Text</button>
+                <button class="tab-btn" data-tab="manual" id="tab-manual">✏️ Enter Manually</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- PASTE MODE -->
+            <form method="POST" action="{{ url_for('analyze.run_analysis') }}" id="paste-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="mode" value="paste">
+                <div class="tab-content active" id="tab-content-paste">
+                    <div class="form-group">
+                        <label class="form-label" for="opportunity_text">Opportunity Text</label>
+                        <textarea class="form-textarea textarea-large" id="opportunity_text" name="opportunity_text"
+                                  rows="14"
+                                  placeholder="Paste the email, scholarship announcement, internship description, competition details, or opportunity information here...
+
+Example:
+Subject: Google Summer of Code 2026 — Applications Open
+
+Google is accepting applications for Summer of Code 2026. This program offers students a stipend to work on open source projects.
+
+Requirements: Currently enrolled in university, knowledge of at least one programming language.
+Deadline: March 15, 2026
+Apply at: https://summerofcode.withgoogle.com">{{ request.form.get('opportunity_text', '') }}</textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyze-btn">
+                            🔍 Analyze Opportunity
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-lg" id="clear-btn">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- MANUAL MODE -->
+            <form method="POST" action="{{ url_for('analyze.run_analysis') }}" id="manual-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="mode" value="manual">
+                <div class="tab-content" id="tab-content-manual" style="display:none;">
+                    <div class="profile-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="m_title">Opportunity Title *</label>
+                            <input type="text" class="form-input" id="m_title" name="title"
+                                   placeholder="e.g., Google Summer of Code 2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m_organization">Organization</label>
+                            <input type="text" class="form-input" id="m_organization" name="organization"
+                                   placeholder="e.g., Google">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m_type">Type</label>
+                            <select class="form-select" id="m_type" name="type">
+                                <option value="">Select type</option>
+                                <option value="internship">Internship</option>
+                                <option value="scholarship">Scholarship</option>
+                                <option value="competition">Competition</option>
+                                <option value="fellowship">Fellowship</option>
+                                <option value="research">Research</option>
+                                <option value="hackathon">Hackathon</option>
+                                <option value="job">Job</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="conference">Conference</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m_deadline">Deadline</label>
+                            <input type="date" class="form-input" id="m_deadline" name="deadline">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m_location">Location</label>
+                            <input type="text" class="form-input" id="m_location" name="location"
+                                   placeholder="e.g., Remote, San Francisco, USA">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m_remote_onsite">Format</label>
+                            <select class="form-select" id="m_remote_onsite" name="remote_onsite">
+                                <option value="">Select format</option>
+                                <option value="remote">Remote</option>
+                                <option value="on-site">On-site</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_description">Description</label>
+                        <textarea class="form-textarea" id="m_description" name="description" rows="4"
+                                  placeholder="Describe the opportunity..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_application_url">Application URL</label>
+                        <input type="url" class="form-input" id="m_application_url" name="application_url"
+                               placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_eligibility">Eligibility Requirements</label>
+                        <textarea class="form-textarea" id="m_eligibility" name="eligibility" rows="3"
+                                  placeholder="e.g., Currently enrolled in Bachelor's/Master's, CGPA > 3.0, knowledge of Python..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_required_skills">Required Skills (comma-separated)</label>
+                        <input type="text" class="form-input" id="m_required_skills" name="required_skills"
+                               placeholder="e.g., Python, SQL, Machine Learning">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_preferred_skills">Preferred Skills (comma-separated)</label>
+                        <input type="text" class="form-input" id="m_preferred_skills" name="preferred_skills"
+                               placeholder="e.g., TensorFlow, Docker, AWS">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_documents">Required Documents (comma-separated)</label>
+                        <input type="text" class="form-input" id="m_documents" name="documents"
+                               placeholder="e.g., CV, Transcript, Cover Letter, Recommendation Letter">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="m_selection_process">Selection Process</label>
+                        <input type="text" class="form-input" id="m_selection_process" name="selection_process"
+                               placeholder="e.g., Application review, Online test, Interview">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyze-manual-btn">
+                            🔍 Analyze Opportunity
+                        </button>
+                        <button type="reset" class="btn btn-secondary btn-lg">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

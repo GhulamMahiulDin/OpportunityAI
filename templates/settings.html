@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Settings — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="settings-page">
+    <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Manage your account and application preferences.</p>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="card">
+        <div class="card-header">
+            <h2>👤 Account</h2>
+        </div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Name</span>
+                    <span class="detail-value">{{ user.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">{{ user.email }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Member Since</span>
+                    <span class="detail-value">{{ user.created_at|dateformat if user.created_at else 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gmail Sync -->
+    <div class="card">
+        <div class="card-header">
+            <h2>📥 Gmail Sync</h2>
+            {% if gmail_account %}
+                <span class="gmail-status-connected"><span class="gmail-status-dot"></span> Connected</span>
+            {% else %}
+                <span class="badge badge-neutral">Not connected</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if gmail_account %}
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Gmail Address</span>
+                        <span class="detail-value">{{ gmail_account.gmail_address }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Connected Since</span>
+                        <span class="detail-value">{{ gmail_account.connected_at|dateformat if gmail_account.connected_at else 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Synced</span>
+                        <span class="detail-value">{{ gmail_account.last_synced_at|dateformat('%b %d, %Y at %I:%M %p') if gmail_account.last_synced_at else 'Never — run a sync from the Inbox page' }}</span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+                    <a href="{{ url_for('inbox.inbox_page') }}" class="btn btn-primary btn-sm">Go to Inbox</a>
+                    <form method="POST" action="{{ url_for('settings.gmail_disconnect') }}"
+                          onsubmit="return confirm('Disconnect Gmail? Your already-synced opportunities will be kept, but new syncing will stop.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary btn-sm">Disconnect</button>
+                    </form>
+                </div>
+                <p class="text-muted" style="margin-top:0.75rem; font-size:0.8rem;">
+                    We only ever read your inbox (read-only access) — OpportunityAI can't send, delete, or modify your email.
+                </p>
+            {% else %}
+                <p class="text-muted">
+                    Connect Gmail (read-only access) so OpportunityAI can scan for internship, scholarship,
+                    fellowship, and competition emails, score them against your profile, and tell you which
+                    ones are actually worth your time — before the deadline passes.
+                </p>
+                <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary" style="margin-top:0.75rem;">Connect Gmail</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Future Integration Placeholders -->
+    <div class="card">
+        <div class="card-header">
+            <h2>🔗 More Integrations</h2>
+            <span class="badge badge-neutral">Coming Soon</span>
+        </div>
+        <div class="card-body">
+            <div class="settings-integration">
+                <div class="integration-item">
+                    <div class="integration-info">
+                        <h3>📨 Outlook Integration</h3>
+                        <p class="text-muted">Automatically detect opportunities from your Outlook inbox.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" disabled>Connect</button>
+                </div>
+                <div class="integration-item">
+                    <div class="integration-info">
+                        <h3>🔔 Email Notifications</h3>
+                        <p class="text-muted">Receive email alerts for high-match opportunities and deadlines.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" disabled>Enable</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About -->
+    <div class="card">
+        <div class="card-header">
+            <h2>ℹ️ About</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>OpportunityAI</strong> v1.0</p>
+            <p class="text-muted">Find what matters. Know your match. Apply with confidence.</p>
+            <p class="text-muted mt-sm">Built with Python, Flask, SQLite, HTML, CSS, and JavaScript.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

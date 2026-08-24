@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Inbox — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="inbox-page">
+    <div class="page-header">
+        <h1 class="page-title">📥 Inbox</h1>
+        <p class="page-subtitle">OpportunityAI reads your Gmail for you and only surfaces what's actually worth your time.</p>
+    </div>
+
+    {% if not gmail_account %}
+        <div class="card card-accent">
+            <div class="card-body">
+                <div class="flex flex-between flex-center">
+                    <div>
+                        <h3>🔗 Connect your Gmail</h3>
+                        <p class="text-muted">
+                            Stop scrolling past scholarship and internship emails. Connect Gmail (read-only —
+                            we never send or delete anything) and we'll scan for real opportunities, score them
+                            against your profile, and only tell you about the ones worth applying to.
+                        </p>
+                    </div>
+                    <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary">Connect Gmail</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="inbox-hero">
+            <div class="inbox-hero-text">
+                <h2>Connected: {{ gmail_account.gmail_address }}</h2>
+                <p>
+                    {% if gmail_account.last_synced_at %}
+                        Last synced {{ gmail_account.last_synced_at|dateformat('%b %d, %Y at %I:%M %p') }}
+                    {% else %}
+                        Never synced yet — run your first sync below.
+                    {% endif %}
+                </p>
+            </div>
+            <form method="POST" action="{{ url_for('inbox.gmail_sync') }}" id="gmail-sync-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary btn-lg" id="gmail-sync-btn">🔄 Sync Now</button>
+            </form>
+        </div>
+
+        {% if pending and pending|length > 0 %}
+            <h2 style="margin-bottom:0.75rem;">🎯 New matches awaiting your review ({{ pending|length }})</h2>
+            {% for item in pending %}
+            <div class="inbox-item" id="inbox-item-{{ item.id }}">
+                <div class="inbox-item-top">
+                    <div class="opp-card-info">
+                        <span class="badge badge-type badge-{{ item.type|default('other') }}">{{ item.type|default('Other')|title }}</span>
+                        <h3 class="opp-card-title">{{ item.title }}</h3>
+                        <p class="opp-card-org">{{ item.organization }}</p>
+                        <p class="text-muted" style="font-size:0.78rem; margin-top:0.35rem;">
+                            ✉️ From: {{ item.sender }} &nbsp;•&nbsp; Subject: "{{ item.subject }}"
+                        </p>
+                    </div>
+                    {% if item.recommendation %}
+                    <span class="badge badge-accent">{{ item.recommendation_icon }} {{ item.recommendation }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="inbox-item-scores">
+                    <div class="inbox-score">
+                        <span class="inbox-score-value {% if item.match_score|default(0, true) >= 75 %}score-high{% elif item.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">{{ item.match_score|default(0, true)|int }}%</span>
+                        <span class="inbox-score-label">Match</span>
+                    </div>
+                    <div class="inbox-score">
+                        <span class="inbox-score-value {% if item.urgency_score|default(0, true) >= 75 %}score-high{% elif item.urgency_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">{{ item.urgency_score|default(0, true)|int }}</span>
+                        <span class="inbox-score-label">Urgency</span>
+                    </div>
+                    <div class="inbox-score">
+                        <span class="inbox-score-value {% if item.trust_score|default(0, true) >= 75 %}score-high{% elif item.trust_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">{{ item.trust_score|default(0, true)|int }}</span>
+                        <span class="inbox-score-label">Trust</span>
+                    </div>
+                    <div class="inbox-score">
+                        <span class="inbox-score-value {% if item.completeness_score|default(0, true) >= 75 %}score-high{% elif item.completeness_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">{{ item.completeness_score|default(0, true)|int }}%</span>
+                        <span class="inbox-score-label">Complete</span>
+                    </div>
+                </div>
+
+                <div class="opp-card-meta">
+                    {% if item.deadline %}<span class="meta-item">📅 {{ item.deadline }}</span>{% endif %}
+                    {% if item.location %}<span class="meta-item">📍 {{ item.location }}</span>{% endif %}
+                </div>
+
+                <div class="inbox-item-actions">
+                    <a href="{{ url_for('opportunities.opportunity_detail', opportunity_id=item.opportunity_id) }}" class="btn btn-secondary btn-sm">View Full Analysis</a>
+                    <form method="POST" action="{{ url_for('applications.save_application', opportunity_id=item.opportunity_id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm">✅ Track This</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('inbox.dismiss', synced_email_id=item.id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-ghost btn-sm">Dismiss</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3>No new matches right now</h3>
+                <p>Hit "Sync Now" to check your inbox, or check back after your next sync — we only show opportunities that clear your match bar.</p>
+            </div>
+        {% endif %}
+
+        {% if recent_log and recent_log|length > 0 %}
+        <div class="card" style="margin-top:1.5rem;">
+            <div class="card-header">
+                <h2>🕓 Recent sync activity</h2>
+            </div>
+            <div class="card-body" style="padding:0;">
+                {% for log in recent_log %}
+                <a class="sync-log-item" href="https://mail.google.com/mail/u/0/#all/{{ log.gmail_message_id }}" target="_blank" rel="noopener">
+                    <div>
+                        <div class="sync-log-subject">
+                            {% if log.is_opportunity %}🎯{% else %}⏭️{% endif %}
+                            {{ log.subject or '(no subject)' }}
+                        </div>
+                        <div class="sync-log-meta">{{ log.sender }}</div>
+                    </div>
+                    <span class="badge {% if log.is_opportunity %}badge-success{% else %}badge-neutral{% endif %}">
+                        {{ log.classifier_score|int }}/100
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

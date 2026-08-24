@@ -1,0 +1,85 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Activity Log — Admin — OpportunityAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Activity Log</h1>
+    <p class="page-subtitle">Full audit trail — every admin action and login event, for accountability</p>
+</div>
+
+<div class="detail-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; align-items:start;">
+    <div class="card">
+        <div class="card-header"><h2>🔐 Admin Actions</h2></div>
+        <div class="card-body" style="padding:0 0 1rem 0;">
+            <form method="GET" style="display:flex; gap:0.5rem; padding:1rem 1.25rem 0.5rem 1.25rem;">
+                <input type="hidden" name="login_page" value="{{ login_page }}">
+                <input type="hidden" name="login_status" value="{{ login_status }}">
+                <input type="text" name="action" class="form-input" style="flex:1;" placeholder="Filter by action (e.g. DEACTIVATE_USER)…" value="{{ action_filter }}">
+                <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+            </form>
+            {% if admin_activity %}
+                {% for a in admin_activity %}
+                <div class="sync-log-item">
+                    <div>
+                        <div class="sync-log-subject">{{ a.action|replace('_', ' ')|title }}</div>
+                        <div class="sync-log-meta">{{ a.admin_name }} ({{ a.admin_email }})</div>
+                        {% if a.details %}<div class="sync-log-meta">{{ a.details }}</div>{% endif %}
+                    </div>
+                    <span class="sync-log-meta">{{ a.created_at|dateformat('%b %d, %I:%M %p') }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state"><p>No admin actions recorded yet.</p></div>
+            {% endif %}
+            {% if admin_total_pages > 1 %}
+            <div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; margin-top:1rem;">
+                <a href="{{ url_for('admin.activity_log', action=action_filter or None, login_status=login_status or None, login_page=login_page, admin_page=admin_page-1) }}"
+                   class="btn btn-secondary btn-sm" {% if admin_page <= 1 %}style="pointer-events:none; opacity:0.4;"{% endif %}>← Prev</a>
+                <span class="text-muted" style="font-size:0.85rem;">Page {{ admin_page }} of {{ admin_total_pages }}</span>
+                <a href="{{ url_for('admin.activity_log', action=action_filter or None, login_status=login_status or None, login_page=login_page, admin_page=admin_page+1) }}"
+                   class="btn btn-secondary btn-sm" {% if admin_page >= admin_total_pages %}style="pointer-events:none; opacity:0.4;"{% endif %}>Next →</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>🔑 Login History</h2></div>
+        <div class="card-body" style="padding:0 0 1rem 0;">
+            <form method="GET" style="display:flex; gap:0.5rem; padding:1rem 1.25rem 0.5rem 1.25rem;">
+                <input type="hidden" name="admin_page" value="{{ admin_page }}">
+                <input type="hidden" name="action" value="{{ action_filter }}">
+                <select name="login_status" class="form-select" onchange="this.form.submit()">
+                    <option value="" {% if not login_status %}selected{% endif %}>All logins</option>
+                    <option value="success" {% if login_status == 'success' %}selected{% endif %}>Successful only</option>
+                    <option value="failed" {% if login_status == 'failed' %}selected{% endif %}>Failed only</option>
+                </select>
+            </form>
+            {% if login_activity %}
+                {% for l in login_activity %}
+                <div class="sync-log-item">
+                    <div>
+                        <div class="sync-log-subject">{{ l.email_attempted }}</div>
+                        <div class="sync-log-meta">{{ l.created_at|dateformat('%b %d, %I:%M %p') }}{% if l.ip_address %} · {{ l.ip_address }}{% endif %}</div>
+                    </div>
+                    <span class="badge {% if l.success %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ 'Success' if l.success else 'Failed' }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state"><p>No login activity recorded yet.</p></div>
+            {% endif %}
+            {% if login_total_pages > 1 %}
+            <div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; margin-top:1rem;">
+                <a href="{{ url_for('admin.activity_log', action=action_filter or None, login_status=login_status or None, admin_page=admin_page, login_page=login_page-1) }}"
+                   class="btn btn-secondary btn-sm" {% if login_page <= 1 %}style="pointer-events:none; opacity:0.4;"{% endif %}>← Prev</a>
+                <span class="text-muted" style="font-size:0.85rem;">Page {{ login_page }} of {{ login_total_pages }}</span>
+                <a href="{{ url_for('admin.activity_log', action=action_filter or None, login_status=login_status or None, admin_page=admin_page, login_page=login_page+1) }}"
+                   class="btn btn-secondary btn-sm" {% if login_page >= login_total_pages %}style="pointer-events:none; opacity:0.4;"{% endif %}>Next →</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

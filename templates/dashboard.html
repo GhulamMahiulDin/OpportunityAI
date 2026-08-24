@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="dashboard-page">
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Your opportunity intelligence at a glance</p>
+    </div>
+
+    <!-- ========== OVERVIEW CARDS ========== -->
+    <div class="stat-grid">
+        <div class="stat-card" id="stat-total">
+            <div class="stat-icon">💼</div>
+            <div class="stat-value">{{ stats.total_opportunities }}</div>
+            <div class="stat-label">Opportunities</div>
+        </div>
+        <div class="stat-card stat-card-success" id="stat-matches">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ stats.strong_matches }}</div>
+            <div class="stat-label">Strong Matches</div>
+        </div>
+        <div class="stat-card stat-card-danger" id="stat-urgent">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-value">{{ stats.urgent }}</div>
+            <div class="stat-label">Urgent</div>
+        </div>
+        <div class="stat-card stat-card-info" id="stat-applications">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ stats.total_applications }}</div>
+            <div class="stat-label">Applications</div>
+        </div>
+    </div>
+
+    <!-- ========== GMAIL INBOX SUMMARY ========== -->
+    {% if not gmail_account %}
+    <div class="card card-accent">
+        <div class="card-body">
+            <div class="flex flex-between flex-center">
+                <div>
+                    <h3>📥 Never miss an opportunity again</h3>
+                    <p class="text-muted">Connect Gmail and we'll scan your inbox, score every opportunity against your profile, and tell you what's actually worth applying to.</p>
+                </div>
+                <a href="{{ url_for('inbox.inbox_page') }}" class="btn btn-primary">Connect Gmail</a>
+            </div>
+        </div>
+    </div>
+    {% elif inbox_pending_count and inbox_pending_count > 0 %}
+    <div class="card card-accent">
+        <div class="card-body">
+            <div class="flex flex-between flex-center">
+                <div>
+                    <h3>📥 {{ inbox_pending_count }} new match{{ 'es' if inbox_pending_count != 1 else '' }} from your inbox</h3>
+                    <p class="text-muted">We found opportunities in your Gmail that match your profile — take a look before the deadlines close in.</p>
+                </div>
+                <a href="{{ url_for('inbox.inbox_page') }}" class="btn btn-primary">Review Now</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ========== QUICK ACTIONS ========== -->
+    <div class="quick-actions">
+        <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-primary btn-lg">
+            🔍 Analyze New Opportunity
+        </a>
+    </div>
+
+    <!-- ========== HIGH PRIORITY OPPORTUNITIES ========== -->
+    <div class="card">
+        <div class="card-header">
+            <h2>🔥 High Priority Opportunities</h2>
+            <a href="{{ url_for('opportunities.opportunities_page') }}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="card-body">
+            {% if high_priority and high_priority|length > 0 %}
+                <div class="opportunity-list">
+                    {% for opp in high_priority %}
+                    <a href="{{ url_for('opportunities.opportunity_detail', opportunity_id=opp.id) }}" class="opportunity-card" id="opp-card-{{ opp.id }}">
+                        <div class="opp-card-top">
+                            <div class="opp-card-info">
+                                <span class="badge badge-type badge-{{ opp.type|default('other') }}">{{ opp.type|default('Other')|title }}</span>
+                                <h3 class="opp-card-title">{{ opp.title }}</h3>
+                                <p class="opp-card-org">{{ opp.organization }}</p>
+                            </div>
+                            <div class="opp-card-score">
+                                <div class="score-circle score-circle-sm {% if opp.match_score|default(0, true) >= 75 %}score-high{% elif opp.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                                    <span class="score-value">{{ opp.match_score|default(0, true)|int }}</span>
+                                    <span class="score-unit">%</span>
+                                </div>
+                                <span class="score-label">Match</span>
+                            </div>
+                        </div>
+                        <div class="opp-card-bottom">
+                            <div class="opp-card-meta">
+                                {% if opp.deadline %}
+                                <span class="meta-item">📅 {{ opp.deadline }}</span>
+                                {% endif %}
+                                {% if opp.location %}
+                                <span class="meta-item">📍 {{ opp.location }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="opp-card-badges">
+                                {% if opp.urgency_score|default(0, true) >= 75 %}
+                                <span class="badge badge-danger">Urgent</span>
+                                {% endif %}
+                                {% if opp.trust_score|default(0, true) >= 75 %}
+                                <span class="badge badge-success">Trusted</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No opportunities yet</h3>
+                    <p>Paste an opportunity email or description to get started.</p>
+                    <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-primary">Analyze Your First Opportunity</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ========== RECENT APPLICATIONS ========== -->
+    {% if recent_applications and recent_applications|length > 0 %}
+    <div class="card">
+        <div class="card-header">
+            <h2>📋 Recent Applications</h2>
+            <a href="{{ url_for('applications.applications_page') }}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="application-list">
+                {% for app in recent_applications[:3] %}
+                <div class="application-card-mini">
+                    <div class="app-mini-info">
+                        <h4>{{ app.title }}</h4>
+                        <p class="text-muted">{{ app.organization }}</p>
+                    </div>
+                    <div class="app-mini-status">
+                        <span class="badge badge-status badge-{{ app.status }}">{{ app.status|title }}</span>
+                        {% if app.tasks_total is defined and app.tasks_total > 0 %}
+                        <span class="progress-mini">{{ app.tasks_done|default(0) }}/{{ app.tasks_total|default(0) }} tasks</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ========== PROFILE COMPLETENESS REMINDER ========== -->
+    {% if not profile_complete %}
+    <div class="card card-accent">
+        <div class="card-body">
+            <div class="flex flex-between flex-center">
+                <div>
+                    <h3>👤 Complete Your Profile</h3>
+                    <p class="text-muted">A complete profile improves match accuracy. Add your skills, interests, and academic details.</p>
+                </div>
+                <a href="{{ url_for('profile.profile_page') }}" class="btn btn-primary">Update Profile</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

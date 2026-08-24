@@ -1,0 +1,107 @@
+{% extends "admin/_layout.html" %}
+{% block title %}{{ user.name }} — Admin — OpportunityAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('admin.users_list') }}" class="text-muted" style="font-size:0.85rem;">← Back to Users</a>
+    <h1 class="page-title" style="margin-top:0.5rem;">{{ user.name }}</h1>
+    <p class="page-subtitle">{{ user.email }}</p>
+</div>
+
+<div class="detail-grid" style="grid-template-columns: 2fr 1fr; gap: 1rem; align-items:start;">
+    <div class="card">
+        <div class="card-header"><h2>Account Details</h2></div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Role</span>
+                    <span class="detail-value">
+                        {{ user.role|title }}
+                        {% if target_is_super_admin %}<span class="badge badge-accent">SUPER ADMIN</span>{% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value">
+                        {% if user.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Deactivated</span>{% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Sign-in Method</span>
+                    <span class="detail-value">{{ 'Google' if user.is_google_account else 'Email & Password' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Joined</span>
+                    <span class="detail-value">{{ user.created_at|dateformat }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Login</span>
+                    <span class="detail-value">{{ user.last_login|dateformat('%b %d, %Y at %I:%M %p') if user.last_login else 'Never' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Opportunities Analyzed</span>
+                    <span class="detail-value">{{ user.opportunity_count }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Applications Tracked</span>
+                    <span class="detail-value">{{ user.application_count }}</span>
+                </div>
+            </div>
+
+            {% if user.profile %}
+            <h3 style="margin-top:1.5rem; font-size:0.95rem;">Student Profile</h3>
+            <div class="detail-grid" style="margin-top:0.5rem;">
+                <div class="detail-item">
+                    <span class="detail-label">University</span>
+                    <span class="detail-value">{{ user.profile.university or 'Not set' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Degree / Major</span>
+                    <span class="detail-value">{{ user.profile.degree or '—' }} {{ user.profile.major or '' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">CGPA</span>
+                    <span class="detail-value">{{ user.profile.cgpa or '—' }}</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Admin Actions</h2></div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:0.75rem;">
+            {% if target_is_super_admin %}
+                <div class="flash flash-info" style="margin:0;">
+                    <span class="flash-text">This is the permanent Super Admin account. It cannot be deactivated, demoted, or have its admin role removed by anyone, including other admins.</span>
+                </div>
+            {% else %}
+                <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}"
+                      onsubmit="return confirm('{{ 'Deactivate' if user.is_active else 'Activate' }} this account?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn {% if user.is_active %}btn-danger{% else %}btn-primary{% endif %} btn-sm" style="width:100%;">
+                        {{ 'Deactivate Account' if user.is_active else 'Reactivate Account' }}
+                    </button>
+                </form>
+
+                {% if viewer_is_super_admin %}
+                <form method="POST" action="{{ url_for('admin.change_user_role', user_id=user.id) }}"
+                      onsubmit="return confirm('{{ 'Are you sure you want to remove administrator access from this user?' if user.role == 'admin' else 'Are you sure you want to give administrator access to this user?' }}');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="role" value="{{ 'student' if user.role == 'admin' else 'admin' }}">
+                    <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;">
+                        {{ 'Remove Admin Access' if user.role == 'admin' else 'Grant Admin Access' }}
+                    </button>
+                </form>
+                {% elif user.role == 'admin' %}
+                <p class="text-muted" style="font-size:0.78rem;">Only the Super Admin can grant or remove administrator access.</p>
+                {% endif %}
+            {% endif %}
+
+            <p class="text-muted" style="font-size:0.78rem; margin-top:0.5rem;">
+                Every action here is recorded in the Activity Log with your name and timestamp.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Users — Admin — OpportunityAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Users</h1>
+    <p class="page-subtitle">{{ total_count }} user{{ 's' if total_count != 1 else '' }} found</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="GET" class="filter-controls">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" name="search" class="form-input search-input" placeholder="Search name or email…" value="{{ search }}">
+            </div>
+            <select name="role" class="form-select sort-select" onchange="this.form.submit()">
+                <option value="" {% if not role_filter %}selected{% endif %}>All roles</option>
+                <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Students</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+    <div class="card-body" style="padding:0;">
+        {% if users %}
+            {% for u in users %}
+            <a href="{{ url_for('admin.user_detail', user_id=u.id) }}" class="sync-log-item" style="padding:1rem 1.25rem;">
+                <div>
+                    <div class="sync-log-subject">
+                        {{ u.name }}
+                        {% if u.email == super_admin_email %}<span class="badge badge-accent">SUPER ADMIN</span>{% elif u.role == 'admin' %}<span class="badge badge-accent">Admin</span>{% endif %}
+                        {% if u.is_google_account %}<span class="badge badge-neutral">Google</span>{% endif %}
+                        {% if not u.is_active %}<span class="badge badge-danger">Deactivated</span>{% endif %}
+                    </div>
+                    <div class="sync-log-meta">{{ u.email }} · Joined {{ u.created_at|dateformat }}</div>
+                </div>
+                <span class="sync-log-meta">
+                    {% if u.last_login %}Last login {{ u.last_login|dateformat('%b %d') }}{% else %}Never logged in{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>No users found</h3>
+                <p>Try a different search term or clear the filters.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if total_pages > 1 %}
+<div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; margin-top:1.25rem;">
+    <a href="{{ url_for('admin.users_list', search=search or None, role=role_filter or None, page=page-1) }}"
+       class="btn btn-secondary btn-sm" {% if page <= 1 %}style="pointer-events:none; opacity:0.4;"{% endif %}>← Prev</a>
+    <span class="text-muted" style="font-size:0.85rem;">Page {{ page }} of {{ total_pages }}</span>
+    <a href="{{ url_for('admin.users_list', search=search or None, role=role_filter or None, page=page+1) }}"
+       class="btn btn-secondary btn-sm" {% if page >= total_pages %}style="pointer-events:none; opacity:0.4;"{% endif %}>Next →</a>
+</div>
+{% endif %}
+{% endblock %}

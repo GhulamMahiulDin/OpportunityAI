@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Opportunities — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="opportunities-page">
+    <div class="page-header">
+        <h1 class="page-title">Opportunities</h1>
+        <p class="page-subtitle">Browse and filter your analyzed opportunities.</p>
+    </div>
+
+    <!-- ========== FILTER BAR ========== -->
+    <div class="filter-bar">
+        <div class="filter-pills" id="type-filters">
+            <button class="filter-pill {% if not current_type %}active{% endif %}" data-type="">All</button>
+            <button class="filter-pill {% if current_type == 'internship' %}active{% endif %}" data-type="internship">Internships</button>
+            <button class="filter-pill {% if current_type == 'scholarship' %}active{% endif %}" data-type="scholarship">Scholarships</button>
+            <button class="filter-pill {% if current_type == 'competition' %}active{% endif %}" data-type="competition">Competitions</button>
+            <button class="filter-pill {% if current_type == 'fellowship' %}active{% endif %}" data-type="fellowship">Fellowships</button>
+            <button class="filter-pill {% if current_type == 'research' %}active{% endif %}" data-type="research">Research</button>
+            <button class="filter-pill {% if current_type == 'job' %}active{% endif %}" data-type="job">Jobs</button>
+            <button class="filter-pill {% if current_type == 'hackathon' %}active{% endif %}" data-type="hackathon">Hackathons</button>
+            <button class="filter-pill {% if current_type == 'other' %}active{% endif %}" data-type="other">Other</button>
+        </div>
+        <div class="filter-controls">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="form-input search-input" id="opp-search"
+                       placeholder="Search by title or organization..." value="{{ current_search|default('') }}">
+            </div>
+            <select class="form-select sort-select" id="opp-sort">
+                <option value="match" {% if current_sort == 'match' %}selected{% endif %}>Best Match</option>
+                <option value="deadline" {% if current_sort == 'deadline' %}selected{% endif %}>Deadline</option>
+                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="urgency" {% if current_sort == 'urgency' %}selected{% endif %}>Urgency</option>
+                <option value="trust" {% if current_sort == 'trust' %}selected{% endif %}>Trust</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- ========== OPPORTUNITY LIST ========== -->
+    {% if opportunities and opportunities|length > 0 %}
+    <div class="opportunity-list" id="opportunity-list">
+        {% for opp in opportunities %}
+        <a href="{{ url_for('opportunities.opportunity_detail', opportunity_id=opp.id) }}"
+           class="opportunity-card" id="opp-card-{{ opp.id }}"
+           data-type="{{ opp.type|default('other') }}"
+           data-title="{{ opp.title|lower }}"
+           data-org="{{ opp.organization|default('')|lower }}">
+            <div class="opp-card-top">
+                <div class="opp-card-info">
+                    <div class="opp-card-badges-top">
+                        <span class="badge badge-type badge-{{ opp.type|default('other') }}">{{ opp.type|default('Other')|title }}</span>
+                        {% if opp.urgency_label and opp.urgency_label in ['Critical', 'High'] %}
+                        <span class="badge badge-danger">{{ opp.urgency_label }}</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="opp-card-title">{{ opp.title }}</h3>
+                    <p class="opp-card-org">{{ opp.organization }}</p>
+                </div>
+                <div class="opp-card-score">
+                    <div class="score-circle score-circle-sm {% if opp.match_score|default(0, true) >= 75 %}score-high{% elif opp.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                        <span class="score-value">{{ opp.match_score|default(0, true)|int }}</span>
+                        <span class="score-unit">%</span>
+                    </div>
+                    <span class="score-label">Match</span>
+                </div>
+            </div>
+            <div class="opp-card-bottom">
+                <div class="opp-card-meta">
+                    {% if opp.deadline %}
+                    <span class="meta-item">📅 {{ opp.deadline }}</span>
+                    {% endif %}
+                    {% if opp.location %}
+                    <span class="meta-item">📍 {{ opp.location }}</span>
+                    {% endif %}
+                </div>
+                <div class="opp-card-scores-mini">
+                    {% if opp.trust_score|default(0, true) is defined %}
+                    <span class="mini-score" title="Trust">🔒 {{ opp.trust_score|default(0, true)|int }}%</span>
+                    {% endif %}
+                    {% if opp.completeness_score|default(0, true) is defined %}
+                    <span class="mini-score" title="Completeness">📋 {{ opp.completeness_score|default(0, true)|int }}%</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">💼</div>
+        <h3>No opportunities found</h3>
+        <p>{% if current_type or current_search %}Try a different filter or search term.{% else %}Analyze an opportunity to see it here.{% endif %}</p>
+        <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-primary">Analyze an Opportunity</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

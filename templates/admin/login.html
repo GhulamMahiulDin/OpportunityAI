@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — OpportunityAI{% endblock %}
+{% block layout_class %}auth-layout{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <span class="logo-icon large">🛡️</span>
+            <h1 class="auth-brand">Admin Portal</h1>
+            <p class="auth-tagline">Sign in with an administrator account.</p>
+        </div>
+
+        <form class="auth-form" method="POST" action="{{ url_for('admin.admin_login') }}" id="admin-login-form" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <h2 class="auth-title">Administrator sign-in</h2>
+
+            {% if error %}
+                <div class="flash flash-error" role="alert">
+                    <span class="flash-text">{{ error }}</span>
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" class="form-input" id="email" name="email"
+                       placeholder="admin@opportunityai.org" required
+                       value="{{ request.form.get('email', '') }}">
+                <span class="form-error" id="email-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-input" id="password" name="password"
+                       placeholder="Enter your password" required>
+                <span class="form-error" id="password-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="admin-login-btn">
+                Log In to Admin Portal
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Not an administrator? <a href="{{ url_for('auth.login') }}" class="auth-link">Go to regular login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

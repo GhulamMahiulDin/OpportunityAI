@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Admin — OpportunityAI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .admin-shell { display: flex; min-height: 100vh; }
+        .admin-sidebar {
+            width: 240px; flex-shrink: 0; background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border); padding: 1.5rem 1rem;
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .admin-sidebar .brand {
+            font-weight: 700; font-size: 1.05rem; margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);
+        }
+        .admin-badge {
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; background-color: var(--accent); color: #fff;
+            padding: 0.1rem 0.4rem; border-radius: var(--radius-sm);
+        }
+        .admin-main { flex: 1; padding: 2rem; max-width: 1200px; }
+        .admin-nav-link {
+            display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-md); color: var(--text-secondary);
+            font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: var(--transition);
+        }
+        .admin-nav-link:hover { background-color: var(--bg-hover); color: var(--text-primary); }
+        .admin-nav-link.active { background-color: var(--accent-light); color: var(--accent); }
+        .admin-footer-link { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+        @media (max-width: 900px) {
+            .admin-shell { flex-direction: column; }
+            .admin-sidebar { width: 100%; flex-direction: row; overflow-x: auto; }
+            .admin-sidebar .brand, .admin-footer-link { display: none; }
+        }
+    </style>
+</head>
+<body>
+    {% if get_flashed_messages() %}
+    <div class="flash-container" id="flash-container">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="flash flash-{{ category }}" role="alert">
+            <span class="flash-text">{{ message }}</span>
+            <button class="flash-close" aria-label="Close">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="brand">🛡️ Admin <span class="admin-badge">Portal</span></div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="admin-nav-link {% if request.path == url_for('admin.admin_dashboard') %}active{% endif %}">📊 Dashboard</a>
+            <a href="{{ url_for('admin.users_list') }}" class="admin-nav-link {% if '/admin/users' in request.path %}active{% endif %}">👥 Users</a>
+            <a href="{{ url_for('admin.opportunities_moderation') }}" class="admin-nav-link {% if '/admin/opportunities' in request.path %}active{% endif %}">📋 Opportunities</a>
+            <a href="{{ url_for('admin.activity_log') }}" class="admin-nav-link {% if '/admin/activity' in request.path %}active{% endif %}">🔐 Activity Log</a>
+            <div class="admin-footer-link">
+                <a href="{{ url_for('dashboard.dashboard_page') }}" class="admin-nav-link">← Back to App</a>
+                <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="admin-nav-link" style="width:100%; background:none; border:none; text-align:left; cursor:pointer; font:inherit; color: var(--danger);">🚪 Log Out</button>
+                </form>
+            </div>
+        </aside>
+        <main class="admin-main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ app_data.title }} — Application — OpportunityAI{% endblock %}
+
+{% block content %}
+<div id="application-detail-page">
+    <div class="page-header">
+        <a href="{{ url_for('applications.applications_page') }}" class="btn btn-secondary btn-sm mb-sm">← Back to Applications</a>
+        <h1 class="page-title">{{ app_data.title }}</h1>
+        <p class="page-subtitle">{{ app_data.organization }}</p>
+    </div>
+
+    <!-- Status & Info -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex flex-between flex-center flex-wrap gap-md">
+                <div class="app-status-control">
+                    <label class="form-label" for="app-status">Status:</label>
+                    <select class="form-select status-select" id="app-status"
+                            data-app-id="{{ app_data.id }}"
+                            onchange="updateApplicationStatus({{ app_data.id }}, this.value)">
+                        <option value="saved" {% if app_data.status == 'saved' %}selected{% endif %}>Saved</option>
+                        <option value="preparing" {% if app_data.status == 'preparing' %}selected{% endif %}>Preparing</option>
+                        <option value="applied" {% if app_data.status == 'applied' %}selected{% endif %}>Applied</option>
+                        <option value="assessment" {% if app_data.status == 'assessment' %}selected{% endif %}>Assessment</option>
+                        <option value="interview" {% if app_data.status == 'interview' %}selected{% endif %}>Interview</option>
+                        <option value="selected" {% if app_data.status == 'selected' %}selected{% endif %}>Selected</option>
+                        <option value="rejected" {% if app_data.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="withdrawn" {% if app_data.status == 'withdrawn' %}selected{% endif %}>Withdrawn</option>
+                        <option value="deadline_passed" {% if app_data.status == 'deadline_passed' %}selected{% endif %}>Deadline Passed</option>
+                    </select>
+                </div>
+                {% if app_data.match_score|default(0, true) is defined and app_data.match_score|default(0, true) is not none %}
+                <div class="score-circle score-circle-sm {% if app_data.match_score|default(0, true) >= 75 %}score-high{% elif app_data.match_score|default(0, true) >= 50 %}score-medium{% else %}score-low{% endif %}">
+                    <span class="score-value">{{ app_data.match_score|default(0, true)|int }}</span>
+                    <span class="score-unit">%</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Checklist -->
+    <div class="card">
+        <div class="card-header">
+            <h2>☑️ Application Checklist</h2>
+            <span class="progress-mini-text" id="checklist-progress">
+                {{ tasks|selectattr('completed')|list|length }}/{{ tasks|length }} completed
+            </span>
+        </div>
+        <div class="card-body">
+            {% if tasks and tasks|length > 0 %}
+                {% set categories = tasks|groupby('category') %}
+                {% for category, cat_tasks in categories %}
+                <div class="checklist-category">
+                    <h3>{{ category|replace('_', ' ')|title }}</h3>
+                    <div class="checklist">
+                        {% for task in cat_tasks %}
+                        <label class="checklist-item {% if task.completed %}completed{% endif %}" id="task-{{ task.id }}">
+                            <input type="checkbox" {% if task.completed %}checked{% endif %}
+                                   data-task-id="{{ task.id }}"
+                                   data-app-id="{{ app_data.id }}"
+                                   class="checklist-checkbox">
+                            <span class="checklist-text">{{ task.task_name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No checklist items yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card">
+        <div class="card-header"><h2>📝 Notes</h2></div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('applications.update_notes', application_id=app_data.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <textarea class="form-textarea" name="notes" rows="4"
+                              placeholder="Add notes about this application...">{{ app_data.notes|default('') }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm">Save Notes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
