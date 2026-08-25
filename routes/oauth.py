@@ -40,8 +40,19 @@ def _redirect_uri(endpoint):
     Google requires an EXACT match against the redirect URIs registered
     in Cloud Console, so this must stay fixed regardless of how the app
     was opened in the browser.
+
+    When running on Vercel (or any non-local host), if the configured
+    base still points at localhost we fall back to the real request host
+    so that OAuth callbacks are never sent to 127.0.0.1 in production.
     """
     base = current_app.config['OAUTH_REDIRECT_BASE'].rstrip('/')
+    # Safety net: if the base is a localhost address but we're clearly
+    # running on a remote host, use the actual request host instead.
+    if '127.0.0.1' in base or 'localhost' in base:
+        req_host = request.host  # e.g. "opportunity-ai-kappa.vercel.app"
+        if req_host and '127.0.0.1' not in req_host and 'localhost' not in req_host:
+            scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+            base = f'{scheme}://{req_host}'
     path = url_for(endpoint)
     return f'{base}{path}'
 

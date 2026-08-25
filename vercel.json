@@ -6,20 +6,10 @@
       "use": "@vercel/python"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/css/(.*)",
-      "headers": { "Content-Type": "text/css; charset=utf-8" },
-      "dest": "/css/$1"
-    },
-    {
-      "src": "/js/(.*)",
-      "headers": { "Content-Type": "application/javascript; charset=utf-8" },
-      "dest": "/js/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }

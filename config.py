@@ -66,9 +66,16 @@ class Config:
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 
+    # Auto-detect production URL from Vercel environment when
+    # OAUTH_REDIRECT_BASE is not explicitly set.
+    _vercel_url = os.environ.get("VERCEL_URL", "")
+    _default_redirect = (
+        f"https://{_vercel_url}" if _vercel_url
+        else "http://127.0.0.1:5000"
+    )
     OAUTH_REDIRECT_BASE = os.environ.get(
         "OAUTH_REDIRECT_BASE",
-        "http://127.0.0.1:5000"
+        _default_redirect
     )
 
     # ------------------------------------------------------------
