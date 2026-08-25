@@ -35,7 +35,7 @@ def format_date(value, fmt='%b %d, %Y'):
         return text[:10]
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='public', static_url_path='')
     app.config.from_object(config_class)
     app.jinja_env.filters['dateformat'] = format_date
 
