@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!css/|js/).*)",
       "destination": "/api/index.py"
     }
   ]
