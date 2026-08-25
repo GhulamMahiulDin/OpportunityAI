@@ -11,16 +11,19 @@
     {% if not gmail_account %}
         <div class="card card-accent">
             <div class="card-body">
-                <div class="flex flex-between flex-center">
-                    <div>
+                <div class="flex flex-between flex-center" style="gap: 20px;">
+                    <div style="flex: 1;">
                         <h3>🔗 Connect your Gmail</h3>
-                        <p class="text-muted">
+                        <p class="text-muted" style="margin-bottom: 12px;">
                             Stop scrolling past scholarship and internship emails. Connect Gmail (read-only —
                             we never send or delete anything) and we'll scan for real opportunities, score them
                             against your profile, and only tell you about the ones worth applying to.
                         </p>
+                        <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 0.825rem; line-height: 1.45; color: var(--text-secondary);">
+                            🔒 <strong>Note on Google verification:</strong> Since we request read-only email access, Google will display an "Unverified App" warning. This is expected. Learn how to proceed safely in our <a href="{{ url_for('auth.google_verification') }}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: underline;">Google Verification Guide</a>.
+                        </div>
                     </div>
-                    <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary">Connect Gmail</a>
+                    <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary" style="align-self: center; white-space: nowrap;">Connect Gmail</a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Google Verification Guide — OpportunityAI{% endblock %}
+{% block layout_class %}auth-layout{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+    <div class="auth-card" style="text-align: left; padding: 40px; max-width: 100%;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <span style="font-size: 2rem;">🔒</span>
+            <h1 class="auth-title" style="margin: 0; font-size: 2rem;">Google Security & Verification Guide</h1>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 1.05rem; line-height: 1.6;">
+            When connecting your Google Account to OpportunityAI, you will see a warning screen saying <strong>"Google hasn't verified this app"</strong>. 
+            This guide explains why this warning appears, how we protect your privacy, and the step-by-step instructions to proceed safely.
+        </p>
+
+        <!-- Why section -->
+        <section style="margin-bottom: 32px; background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius-md);">
+            <h2 style="font-size: 1.3rem; margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                ❓ Why does Google show this warning?
+            </h2>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+                OpportunityAI scans your inbox for internship, fellowship, and scholarship emails, which requires the <strong>Gmail Read-Only</strong> permission (<code>gmail.readonly</code>). 
+            </p>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+                Because this permission allows reading emails, Google classifies it as a <strong>Restricted Scope</strong>. Google requires all apps using restricted scopes to undergo a formal <strong>Cloud Application Security Assessment (CASA) Tier 2</strong> conducted by external auditors, which costs between <strong>$4,500 and $15,000+ USD annually</strong>.
+            </p>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 0;">
+                As an early-stage beta project, we cannot afford this audit fee yet. Therefore, Google displays their standard warning screen. <strong>This does not mean the app is unsafe;</strong> it simply means we have not completed the paid verification process.
+            </p>
+        </section>
+
+        <!-- Safety Guarantees -->
+        <section style="margin-bottom: 32px;">
+            <h2 style="font-size: 1.3rem; margin-bottom: 16px; color: var(--text-primary);">🛡️ Our Privacy & Safety Commitments</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background-color: rgba(0, 200, 83, 0.05); border: 1px solid var(--success); padding: 15px; border-radius: var(--radius-sm);">
+                    <strong style="color: var(--success); display: block; margin-bottom: 6px;">✓ Read-Only Access</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                        We only request permission to read emails. We cannot send, delete, or modify any messages in your inbox.
+                    </p>
+                </div>
+                <div style="background-color: rgba(0, 200, 83, 0.05); border: 1px solid var(--success); padding: 15px; border-radius: var(--radius-sm);">
+                    <strong style="color: var(--success); display: block; margin-bottom: 6px;">✓ High Security Encryption</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                        Your access credentials and authorization tokens are encrypted using AES-256 standard and stored securely.
+                    </p>
+                </div>
+                <div style="background-color: rgba(0, 200, 83, 0.05); border: 1px solid var(--success); padding: 15px; border-radius: var(--radius-sm);">
+                    <strong style="color: var(--success); display: block; margin-bottom: 6px;">✓ Zero Data Selling</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                        We never sell or share your data. Your email content is processed locally and only used to match you with career opportunities.
+                    </p>
+                </div>
+                <div style="background-color: rgba(0, 200, 83, 0.05); border: 1px solid var(--success); padding: 15px; border-radius: var(--radius-sm);">
+                    <strong style="color: var(--success); display: block; margin-bottom: 6px;">✓ Revoke Anytime</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                        You can disconnect Gmail from your account settings at any time, or revoke access instantly via your Google Account permissions page.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Steps Section -->
+        <section style="margin-bottom: 32px; border-top: 1px solid var(--border); padding-top: 30px;">
+            <h2 style="font-size: 1.3rem; margin-bottom: 20px; color: var(--text-primary);">👉 Step-by-Step Instructions to Connect Safely</h2>
+            
+            <!-- Step 1 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 8px;">Step 1: Click "Advanced"</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 12px;">
+                    When the warning screen appears, do not click the blue "Back to safety" button. Instead, click the small <strong>"Advanced"</strong> link on the left.
+                </p>
+                <!-- Mockup 1 -->
+                <div style="background-color: #ffffff; color: #202124; padding: 24px; border-radius: 8px; border: 1px solid #dadce0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: left; max-width: 550px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                        <span style="color: #ea4335; font-size: 24px; margin-right: 12px; line-height: 1;">⚠️</span>
+                        <h4 style="margin: 0; font-size: 18px; font-weight: 400; color: #202124;">Google hasn't verified this app</h4>
+                    </div>
+                    <p style="font-size: 13.5px; line-height: 1.5; color: #3c4043; margin-bottom: 20px;">
+                        You're seeing this screen because the developer has not verified this app with Google. If you trust the developer, you can proceed.
+                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #1a73e8; font-size: 13.5px; font-weight: 600; padding: 6px 12px; border: 2px solid #1a73e8; border-radius: 4px; background-color: rgba(26, 115, 232, 0.05);">👈 Click "Advanced" here</span>
+                        <button style="background-color: #1a73e8; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13.5px; font-weight: 500; pointer-events: none;">Back to safety</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 8px;">Step 2: Click the "Go to..." Link</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 12px;">
+                    An advanced panel will open at the bottom. Click the link that says <strong>"Go to opportunity-ai-kappa.vercel.app (unsafe)"</strong>. 
+                    (The "unsafe" label is Google's default terminology for any unverified project, and does not indicate any threat).
+                </p>
+                <!-- Mockup 2 -->
+                <div style="background-color: #ffffff; color: #202124; padding: 24px; border-radius: 8px; border: 1px solid #dadce0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: left; max-width: 550px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                        <span style="color: #ea4335; font-size: 24px; margin-right: 12px; line-height: 1;">⚠️</span>
+                        <h4 style="margin: 0; font-size: 18px; font-weight: 400; color: #202124;">Google hasn't verified this app</h4>
+                    </div>
+                    <p style="font-size: 13.5px; line-height: 1.5; color: #3c4043; margin-bottom: 15px;">
+                        You're seeing this screen because the developer has not verified this app with Google. If you trust the developer, you can proceed.
+                    </p>
+                    <div style="font-size: 13px; line-height: 1.4; color: #5f6368; margin-top: 10px; margin-bottom: 20px; padding-top: 12px; border-top: 1px solid #f1f3f4;">
+                        OpportunityAI requests access to your Google Account.
+                        <br><br>
+                        <span style="color: #c5221f; font-weight: bold; background-color: #fce8e6; padding: 6px 10px; border-radius: 4px; display: inline-block; border: 1px dashed #d93025;">
+                            👉 Click this: Go to opportunity-ai-kappa.vercel.app (unsafe)
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #5f6368; font-size: 13.5px; text-decoration: underline;">Hide Advanced</span>
+                        <button style="background-color: #1a73e8; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13.5px; font-weight: 500; pointer-events: none;">Back to safety</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div>
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 8px;">Step 3: Confirm Permissions</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 12px;">
+                    Make sure the <strong>"View your email messages and settings"</strong> permission checkbox is checked, then click <strong>"Continue"</strong> to complete the sync connection.
+                </p>
+            </div>
+        </section>
+
+        <!-- CTA Buttons -->
+        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; gap: 15px;">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Back to Login</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('inbox.inbox_page') }}" class="btn btn-secondary">Go to Inbox</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -74,7 +74,10 @@
                     fellowship, and competition emails, score them against your profile, and tell you which
                     ones are actually worth your time — before the deadline passes.
                 </p>
-                <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary" style="margin-top:0.75rem;">Connect Gmail</a>
+                <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 0.825rem; line-height: 1.45; color: var(--text-secondary); margin: 12px 0 16px 0; max-width: 600px;">
+                    🔒 <strong>Note on Google verification:</strong> Since we request read-only email access, Google will display an "Unverified App" warning. This is expected. Learn how to proceed safely in our <a href="{{ url_for('auth.google_verification') }}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: underline;">Google Verification Guide</a>.
+                </div>
+                <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary">Connect Gmail</a>
             {% endif %}
         </div>
     </div>

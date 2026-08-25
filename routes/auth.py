@@ -105,3 +105,7 @@ def privacy():
 @auth_bp.route('/terms')
 def terms():
     return render_template('terms.html')
+
+@auth_bp.route('/google-verification')
+def google_verification():
+    return render_template('google_verification.html')

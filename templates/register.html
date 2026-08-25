@@ -23,6 +23,20 @@
             <span>Sign up with Google</span>
         </a>
 
+        <!-- Google OAuth Verification Notice -->
+        <div class="oauth-notice-box" style="margin: 20px 0 10px 0; padding: 15px; border-radius: var(--radius-sm); border: 1px solid var(--border); background-color: var(--bg-tertiary); text-align: left; font-size: 0.85rem; line-height: 1.5;">
+            <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.1rem; line-height: 1;">🔒</span>
+                <strong style="color: var(--text-primary); font-weight: 600;">Beta Security Notice</strong>
+            </div>
+            <p style="color: var(--text-secondary); margin: 0 0 8px 0;">
+                OpportunityAI is in public beta. Because our smart inbox match scan requests read-only Gmail access, Google will display an <strong>"Unverified App"</strong> warning screen.
+            </p>
+            <p style="color: var(--text-secondary); margin: 0;">
+                <strong>To proceed safely:</strong> Click <span style="color: var(--text-primary); font-weight: 500;">"Advanced"</span> and select <span style="color: var(--text-primary); font-weight: 500;">"Go to..."</span>. Follow our step-by-step <a href="{{ url_for('auth.google_verification') }}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: underline;">Google Verification Guide</a> to see how to proceed.
+            </p>
+        </div>
+
         <div class="auth-divider"><span>or</span></div>
 
         <form class="auth-form" method="POST" action="{{ url_for('auth.register') }}" id="register-form" novalidate>
