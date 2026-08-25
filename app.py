@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, date, timezone
+from zoneinfo import ZoneInfo
 from flask import Flask, render_template
 from flask_wtf.csrf import CSRFProtect
 from config import Config
@@ -17,29 +18,34 @@ from routes.oauth import oauth_bp, init_oauth
 from routes.inbox import inbox_bp
 from routes.admin import admin_bp
 
+# IANA timezone for display throughout the app.
+# All timestamps are stored in UTC in the database; this timezone is
+# used only when rendering dates/times for the user.
+DISPLAY_TIMEZONE = ZoneInfo('Asia/Karachi')
+
+
 def format_date(value, fmt='%b %d, %Y'):
     """
     Jinja filter: safely formats a date/datetime object OR a date-like
-    string (e.g. from SQLite) into a friendly display string,
-    converting UTC timestamps to the local system timezone.
+    string (e.g. from SQLite/PostgreSQL) into a friendly display string,
+    converting UTC timestamps to Pakistan Standard Time (Asia/Karachi).
     """
     if not value:
         return ''
     if isinstance(value, datetime):
-        # Convert UTC naive datetime to local timezone
+        # Treat naive datetimes as UTC (that's how the DB stores them),
+        # then convert to the display timezone.
         if value.tzinfo is None:
-            value = value.replace(tzinfo=timezone.utc).astimezone()
-        else:
-            value = value.astimezone()
-        return value.strftime(fmt)
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(DISPLAY_TIMEZONE).strftime(fmt)
     if isinstance(value, date):
         return value.strftime(fmt)
     # Fallback: value is a string like '2026-01-15 10:30:00' or '2026-01-15'
     text = str(value)
     try:
         parsed = datetime.fromisoformat(text.split('.')[0])
-        # Convert UTC naive datetime string to local timezone
-        local_dt = parsed.replace(tzinfo=timezone.utc).astimezone()
+        # Treat parsed naive datetime as UTC, convert to display timezone
+        local_dt = parsed.replace(tzinfo=timezone.utc).astimezone(DISPLAY_TIMEZONE)
         return local_dt.strftime(fmt)
     except ValueError:
         return text[:10]
