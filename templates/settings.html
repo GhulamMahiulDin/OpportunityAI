@@ -69,15 +69,41 @@
                     We only ever read your inbox (read-only access) — OpportunityAI can't send, delete, or modify your email.
                 </p>
             {% else %}
-                <p class="text-muted">
-                    Connect Gmail (read-only access) so OpportunityAI can scan for internship, scholarship,
-                    fellowship, and competition emails, score them against your profile, and tell you which
-                    ones are actually worth your time — before the deadline passes.
-                </p>
-                <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 0.825rem; line-height: 1.45; color: var(--text-secondary); margin: 12px 0 16px 0; max-width: 600px;">
-                    🔒 <strong>Note on Google verification:</strong> Since we request read-only email access, Google will display an "Unverified App" warning. This is expected. Learn how to proceed safely in our <a href="{{ url_for('auth.google_verification') }}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: underline;">Google Verification Guide</a>.
+                <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                        🛡️ Your Privacy & Security Matter
+                    </h3>
+                    <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.5rem;">
+                        Connecting your Gmail inbox is entirely optional. If you choose to connect, Google will ask you to review and authorize the requested read-only permissions. OpportunityAI uses this data only to automatically discover, score, and rank career opportunities from your emails.
+                    </p>
+                    <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 0;">
+                        We prioritize your data security: we never send, delete, or modify any emails. If you prefer not to connect your inbox, you can choose to analyze email content manually instead.
+                    </p>
                 </div>
-                <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary">Connect Gmail</a>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 1rem;">
+                    <!-- Option 1: Connect Gmail -->
+                    <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-sm); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">🤖 Option 1: Connect Gmail</h4>
+                            <p class="text-muted" style="font-size: 0.8rem; line-height: 1.4; margin-bottom: 16px;">
+                                Automatically scan and extract career opportunities from your connected inbox.
+                            </p>
+                        </div>
+                        <a href="{{ url_for('oauth.gmail_connect') }}" class="btn btn-primary btn-sm" style="text-align: center; width: 100%; box-sizing: border-box;">Connect Gmail</a>
+                    </div>
+
+                    <!-- Option 2: Analyze Manually -->
+                    <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-sm); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">✏️ Option 2: Analyze Manually</h4>
+                            <p class="text-muted" style="font-size: 0.8rem; line-height: 1.4; margin-bottom: 16px;">
+                                Paste specific email texts or announcements to get AI-powered matchmaking scores instantly.
+                            </p>
+                        </div>
+                        <a href="{{ url_for('analyze.analyze_page') }}" class="btn btn-secondary btn-sm" style="text-align: center; width: 100%; box-sizing: border-box;">Analyze an Email Manually</a>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>
