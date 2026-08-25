@@ -121,15 +121,30 @@ def create_app(config_class=Config):
     # Error handlers
     @app.errorhandler(403)
     def forbidden_error(error):
-        return render_template('base.html', title="403 — Access Denied"), 403
+        return render_template(
+            'error.html',
+            error_title="403 — Access Denied",
+            error_message="You do not have permission to access this page.",
+            code=403
+        ), 403
 
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template('base.html', title="404 — Page Not Found"), 404
+        return render_template(
+            'error.html',
+            error_title="404 — Page Not Found",
+            error_message="The page you are looking for does not exist or has been moved.",
+            code=404
+        ), 404
 
     @app.errorhandler(500)
     def internal_error(error):
-        return render_template('base.html', title="500 — Internal Error"), 500
+        return render_template(
+            'error.html',
+            error_title="500 — Internal Server Error",
+            error_message="An unexpected error occurred on the server.",
+            code=500
+        ), 500
 
     return app
 
