@@ -34,25 +34,21 @@ def _google_creds_missing():
 
 def _redirect_uri(endpoint):
     """
-    Builds the OAuth redirect URI from the configured OAUTH_REDIRECT_BASE
-    instead of url_for(..., _external=True), which would otherwise derive
-    the host from the incoming request (e.g. 'localhost' vs '127.0.0.1').
-    Google requires an EXACT match against the redirect URIs registered
-    in Cloud Console, so this must stay fixed regardless of how the app
-    was opened in the browser.
-
-    When running on Vercel (or any non-local host), if the configured
-    base still points at localhost we fall back to the real request host
-    so that OAuth callbacks are never sent to 127.0.0.1 in production.
+    Builds the OAuth redirect URI.
+    If we are running on a remote host (non-localhost), we dynamically use the
+    incoming request's host to ensure the redirect URI matches the exact domain
+    the user is currently visiting (e.g. https://opportunity-ai-kappa.vercel.app).
+    Otherwise, we use the configured OAUTH_REDIRECT_BASE (for local development).
     """
-    base = current_app.config['OAUTH_REDIRECT_BASE'].rstrip('/')
-    # Safety net: if the base is a localhost address but we're clearly
-    # running on a remote host, use the actual request host instead.
-    if '127.0.0.1' in base or 'localhost' in base:
-        req_host = request.host  # e.g. "opportunity-ai-kappa.vercel.app"
-        if req_host and '127.0.0.1' not in req_host and 'localhost' not in req_host:
-            scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
-            base = f'{scheme}://{req_host}'
+    req_host = request.host
+    is_local = not req_host or '127.0.0.1' in req_host or 'localhost' in req_host
+
+    if not is_local:
+        scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+        base = f'{scheme}://{req_host}'
+    else:
+        base = current_app.config['OAUTH_REDIRECT_BASE'].rstrip('/')
+
     path = url_for(endpoint)
     return f'{base}{path}'
 
