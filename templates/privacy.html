@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — OpportunityAI{% endblock %}
+{% block layout_class %}auth-layout{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+    <div class="auth-card" style="text-align: left; padding: 40px; max-width: 100%;">
+        <h1 class="auth-title" style="margin-bottom: 20px; font-size: 2rem;">Privacy Policy</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">Last updated: August 25, 2026</p>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">1. Information We Collect</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                OpportunityAI collects information to provide better services to our users. This includes:
+            </p>
+            <ul style="color: var(--text-secondary); margin-left: 20px; margin-top: 10px; line-height: 1.6;">
+                <li>Account Information: Name, email address, password, and profile data.</li>
+                <li>Google Account Info: Email address and profile picture when using Sign-In with Google.</li>
+                <li>Gmail Data: Read-only access to messages (subjects, bodies, senders) for identifying potential job and internship opportunities if you explicitly connect your Gmail inbox.</li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">2. How We Use Information</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                We use the information we collect to match you with career opportunities, analyze job matches, and track your applications. We do NOT share or sell your personal data or Gmail contents to third parties.
+            </p>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">3. Google API Services Disclosure</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                OpportunityAI's use and transfer to any other app of information received from Google APIs will adhere to 
+                <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes" target="_blank" style="color: var(--accent);">Google API Services User Data Policy</a>, including the Limited Use requirements.
+            </p>
+        </section>
+
+        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Back to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

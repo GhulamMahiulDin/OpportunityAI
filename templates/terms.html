@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service — OpportunityAI{% endblock %}
+{% block layout_class %}auth-layout{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+    <div class="auth-card" style="text-align: left; padding: 40px; max-width: 100%;">
+        <h1 class="auth-title" style="margin-bottom: 20px; font-size: 2rem;">Terms of Service</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">Last updated: August 25, 2026</p>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">1. Acceptance of Terms</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                By accessing or using OpportunityAI, you agree to be bound by these Terms of Service. If you do not agree, you may not use the services.
+            </p>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">2. Use of Services</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                You agree to use OpportunityAI solely for personal, non-commercial purposes to find and organize career opportunities. You agree not to misuse the system or access it using a method other than the interface and instructions provided by us.
+            </p>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 10px; color: var(--text-primary);">3. Disclaimer of Warranties</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                OpportunityAI is provided "as is" and "as available". We do not guarantee the completeness, accuracy, or availability of any career match recommendations or synced data.
+            </p>
+        </section>
+
+        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Back to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
