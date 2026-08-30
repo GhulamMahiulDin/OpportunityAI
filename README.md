@@ -1,3 +1,11 @@
+# OpportunityAI
+
+#### Video Demo: https://youtu.be/r6hkWPlkVc4
+
+#### Description:
+
+OpportunityAI is an AI-powered web application designed to help students discover important opportunities that might otherwise be overlooked in their emails.
+
 # OpportunityAI — AI-Powered Opportunity Intelligence for Students
 
 > **"Find what matters. Know your match. Apply with confidence."**
