@@ -1,4 +1,3 @@
-import sqlite3
 import json
 
 
@@ -25,7 +24,6 @@ def get_recent_admin_activity(db, limit=25, page=1, action_filter=None, admin_fi
     Retrieves a page of admin activity log entries, most recent first.
     Returns (entries, total_count). `limit` doubles as per_page here.
     """
-    db.row_factory = sqlite3.Row
     where_clause = "WHERE 1=1"
     params = []
     if action_filter:
@@ -71,7 +69,6 @@ def get_recent_login_activity(db, limit=25, page=1, success_filter=None):
     Retrieves a page of login log entries, most recent first.
     Returns (entries, total_count). success_filter: True/False/None (any).
     """
-    db.row_factory = sqlite3.Row
     where_clause = "WHERE 1=1"
     params = []
     if success_filter is not None:
@@ -101,7 +98,6 @@ def get_all_users(db, search=None, role_filter=None, page=1, per_page=25):
     Returns (users, total_count) so callers can render pagination controls
     without loading every user into memory.
     """
-    db.row_factory = sqlite3.Row
     where_clause = "WHERE 1=1"
     params = []
     if search:
@@ -130,7 +126,6 @@ def get_all_users(db, search=None, role_filter=None, page=1, per_page=25):
 
 def get_user_admin_detail(db, user_id):
     """User info plus their profile/activity summary, for the admin detail view."""
-    db.row_factory = sqlite3.Row
     user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if not user:
         return None
@@ -162,7 +157,6 @@ def set_user_active_status(db, user_id, is_active):
     route/UI) so it can't be bypassed with a hand-crafted request.
     """
     from services.authz import is_super_admin
-    db.row_factory = sqlite3.Row
     target = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if not target:
         raise LookupError("user not found")
@@ -182,7 +176,6 @@ def set_user_role(db, user_id, role):
     if role not in ('student', 'admin'):
         raise ValueError("role must be 'student' or 'admin'")
     from services.authz import is_super_admin
-    db.row_factory = sqlite3.Row
     target = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if not target:
         raise LookupError("user not found")
@@ -206,7 +199,6 @@ def get_opportunities_for_moderation(db, status_filter=None, page=1, per_page=20
     Retrieves a page of opportunities for the moderation queue.
     Returns (opportunities, total_count).
     """
-    db.row_factory = sqlite3.Row
     where_clause = "WHERE 1=1"
     params = []
     if status_filter:
@@ -274,8 +266,6 @@ def get_system_stats(db):
     'removed' opportunities so a moderator removing something also removes
     it from the numbers, not just from student-facing listings.
     """
-    db.row_factory = sqlite3.Row
-
     def count(sql, params=()):
         row = db.execute(sql, params).fetchone()
         return row[0] if row and row[0] is not None else 0

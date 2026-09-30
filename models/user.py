@@ -1,4 +1,3 @@
-import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 def create_user(db, name, email, password):
@@ -6,7 +5,6 @@ def create_user(db, name, email, password):
     Creates a new user with a hashed password, and initializes a blank student profile.
     Returns the user id.
     """
-    db.row_factory = sqlite3.Row
     hashed = generate_password_hash(password)
     
     cursor = db.execute(
@@ -30,7 +28,6 @@ def create_user_from_google(db, name, email, google_id, picture_url=''):
     no password_hash — they can only log in via Google (unless the user
     later sets one, which isn't wired up yet but the column supports it).
     """
-    db.row_factory = sqlite3.Row
     cursor = db.execute(
         "INSERT INTO users (name, email, password_hash, google_id, picture_url) VALUES (?, ?, NULL, ?, ?)",
         (name, email, google_id, picture_url)
@@ -41,7 +38,6 @@ def create_user_from_google(db, name, email, google_id, picture_url=''):
     return user_id
 
 def get_user_by_google_id(db, google_id):
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM users WHERE google_id = ?", (google_id,)).fetchone()
     return dict(row) if row else None
 
@@ -57,7 +53,6 @@ def get_user_by_email(db, email):
     """
     Retrieves a user by email.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     if row:
         return dict(row)
@@ -67,7 +62,6 @@ def get_user_by_id(db, user_id):
     """
     Retrieves a user by id.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if row:
         return dict(row)
@@ -103,13 +97,11 @@ def ensure_super_admin(db):
     once the account exists and already has the right role.
     """
     from config import Config
-    import sqlite3 as _sqlite3
 
     email = (Config.SUPER_ADMIN_EMAIL or '').strip()
     if not email:
         return None
 
-    db.row_factory = _sqlite3.Row
     existing = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
 
     if existing:

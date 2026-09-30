@@ -1,4 +1,3 @@
-import sqlite3
 import json
 
 def create_opportunity(db, user_id, data_dict, source='manual'):
@@ -27,7 +26,6 @@ def get_opportunity(db, opportunity_id):
     """
     Retrieves an opportunity by ID.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM opportunities WHERE id = ?", (opportunity_id,)).fetchone()
     if row:
         return dict(row)
@@ -37,7 +35,6 @@ def get_opportunities_for_user(db, user_id, filters=None, student_id=None):
     """
     Retrieves opportunities created by a specific user with scores if available.
     """
-    db.row_factory = sqlite3.Row
     query = """
         SELECT o.*,
                COALESCE(os.match_score, 0) AS match_score,
@@ -112,7 +109,6 @@ def get_requirements(db, opportunity_id):
     """
     Retrieves all requirements for an opportunity.
     """
-    db.row_factory = sqlite3.Row
     rows = db.execute("SELECT * FROM opportunity_requirements WHERE opportunity_id = ?", (opportunity_id,)).fetchall()
     return [dict(r) for r in rows]
 
@@ -165,7 +161,6 @@ def get_scores(db, opportunity_id, student_id):
     """
     Retrieves scores for a specific opportunity and student.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM opportunity_scores WHERE opportunity_id = ? AND student_id = ?", (opportunity_id, student_id)).fetchone()
     
     if not row:
@@ -188,8 +183,6 @@ def get_dashboard_data(db, user_id, student_id):
     """
     Retrieves dashboard summary data for a user.
     """
-    db.row_factory = sqlite3.Row
-    
     total_opps = db.execute(
         "SELECT COUNT(*) FROM opportunities WHERE user_id = ? AND moderation_status != 'removed'",
         (user_id,)
@@ -232,4 +225,3 @@ def get_dashboard_data(db, user_id, student_id):
         },
         'high_priority': [dict(r) for r in high_priority_rows]
     }
-

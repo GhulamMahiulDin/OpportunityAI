@@ -1,5 +1,3 @@
-import sqlite3
-
 def ensure_profile_exists(db, user_id):
     """
     Guarantees a student_profiles row exists for this user, creating a
@@ -19,8 +17,6 @@ def get_profile(db, user_id):
     """
     Retrieves the student profile for a given user, including skills, interests, and preferences.
     """
-    db.row_factory = sqlite3.Row
-    
     row = db.execute("SELECT * FROM student_profiles WHERE user_id = ?", (user_id,)).fetchone()
     if not row:
         return None
@@ -88,7 +84,6 @@ def get_student_skills(db, student_id):
     """
     Retrieves all skills for a student.
     """
-    db.row_factory = sqlite3.Row
     rows = db.execute('''
         SELECT s.name, ss.proficiency 
         FROM student_skills ss

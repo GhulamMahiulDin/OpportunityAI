@@ -1,4 +1,3 @@
-import sqlite3
 import json
 from services.crypto_util import encrypt_text, decrypt_text
 
@@ -26,7 +25,6 @@ def get_gmail_account(db, user_id):
     Returns {'gmail_address', 'token': {...decrypted dict...}, 'last_synced_at', 'connected_at'}
     or None if the user hasn't connected Gmail.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute("SELECT * FROM gmail_accounts WHERE user_id = ?", (user_id,)).fetchone()
     if not row:
         return None
@@ -84,7 +82,6 @@ def get_pending_synced_opportunities(db, user_id, student_id=0):
     already tracked as an application), newest first, joined with their
     computed scores so the inbox page can show match/urgency/trust at a glance.
     """
-    db.row_factory = sqlite3.Row
     rows = db.execute(
         """SELECT se.*, o.title, o.organization, o.type, o.deadline, o.location,
                   os.match_score, os.urgency_score, os.trust_score, os.completeness_score,
@@ -119,7 +116,6 @@ def mark_synced_email_status(db, user_id, synced_email_id, status):
 
 def get_recent_sync_log(db, user_id, limit=15):
     """Recent synced emails (opportunity or not) — useful for a 'what did we check' view."""
-    db.row_factory = sqlite3.Row
     rows = db.execute(
         """SELECT * FROM synced_emails WHERE user_id = ?
            ORDER BY created_at DESC LIMIT ?""",

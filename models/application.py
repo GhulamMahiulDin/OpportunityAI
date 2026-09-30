@@ -1,5 +1,3 @@
-import sqlite3
-
 def create_application(db, student_id, opportunity_id):
     """
     Creates a new application with status 'saved'.
@@ -15,7 +13,6 @@ def get_application_by_opportunity(db, student_id, opportunity_id):
     """
     Finds an existing application for a given student + opportunity pair, if any.
     """
-    db.row_factory = sqlite3.Row
     row = db.execute(
         "SELECT * FROM applications WHERE student_id = ? AND opportunity_id = ?",
         (student_id, opportunity_id)
@@ -28,7 +25,6 @@ def get_application(db, application_id):
     and computed scores (field names match what the templates expect:
     title, organization, deadline, location, type, match_score, etc.)
     """
-    db.row_factory = sqlite3.Row
     row = db.execute('''
         SELECT a.*, o.title, o.organization, o.deadline, o.location, o.type,
                o.application_url, o.description,
@@ -49,7 +45,6 @@ def get_applications_for_student(db, student_id, status_filter=None):
     Field names match what the templates expect (title, organization,
     deadline, tasks_done, tasks_total) rather than raw SQL aliases.
     """
-    db.row_factory = sqlite3.Row
     query = '''
         SELECT a.*, o.title, o.organization, o.deadline, o.location, o.type,
                os.match_score, os.urgency_score,
@@ -104,7 +99,6 @@ def get_tasks(db, application_id):
     """
     Retrieves all tasks for an application.
     """
-    db.row_factory = sqlite3.Row
     rows = db.execute("SELECT * FROM application_tasks WHERE application_id = ?", (application_id,)).fetchall()
     return [dict(r) for r in rows]
 
@@ -132,7 +126,6 @@ def generate_checklist_from_opportunity(db, application_id, opportunity_id):
     """
     Generates a checklist for an application based on opportunity requirements.
     """
-    db.row_factory = sqlite3.Row
     opportunity = db.execute("SELECT * FROM opportunities WHERE id = ?", (opportunity_id,)).fetchone()
     requirements = db.execute("SELECT * FROM opportunity_requirements WHERE opportunity_id = ?", (opportunity_id,)).fetchall()
     
